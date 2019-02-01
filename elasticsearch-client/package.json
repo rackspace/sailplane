@@ -1,0 +1,47 @@
+{
+  "name": "@sailplane/elasticsearch-client",
+  "version": "1.0.0",
+  "description": "Dead simple client for AWS managed Elasticsearch.",
+  "keywords": [
+    "aws",
+    "elasticsearch",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "tsc && npm link",
+    "test": "jest --no-cache --verbose",
+    "test:watch": "jest --watch",
+    "clean:publish": "rm -r dist && npm run build && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onicagroup/sailplane.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Onica Group",
+  "homepage": "https://docs.onica.com/projects/sailplane",
+  "contributors": [
+    "Adam Fanello"
+  ],
+  "devDependencies": {
+    "@sailplane/aws-https": "file:../aws-https",
+    "@sailplane/logger": "file:../logger",
+    "@types/jest": "^23.3.2",
+    "@types/node": "^8.10.10",
+    "aws-sdk": "^2.358.0",
+    "aws4": "^1.8.0",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.2",
+    "ts-loader": "^2.3.7",
+    "ts-node": "^5.0.1",
+    "typescript": "^2.9.2"
+  },
+  "peerDependencies": {
+    "@sailplane/aws-https": "^1.0.0",
+    "@sailplane/logger": "^1.0.0"
+  },
+  "main": "dist/elasticsearch-client.js",
+  "files": [
+    "dist/elasticsearch-client.d.ts"
+  ]
+}

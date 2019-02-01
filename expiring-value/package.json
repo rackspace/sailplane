@@ -1,0 +1,41 @@
+{
+  "name": "@sailplane/expiring-value",
+  "version": "1.0.0",
+  "description": "Container for a value that is instantiated on-demand (lazy-loaded via factory) and cached for a limited time.",
+  "keywords": [
+    "factory",
+    "lazy",
+    "expire",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "tsc && npm link",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "clean:publish": "rm -r dist && npm run build && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onicagroup/sailplane.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Onica Group",
+  "homepage": "https://docs.onica.com/projects/sailplane",
+  "contributors": [
+    "Adam Fanello"
+  ],
+  "devDependencies": {
+    "@types/jest": "^23.3.2",
+    "@types/node": "^8.10.10",
+    "jest": "^23.6.0",
+    "mockdate": "^2.0.2",
+    "ts-jest": "^23.10.2",
+    "ts-loader": "^2.3.7",
+    "ts-node": "^5.0.1",
+    "typescript": "^2.9.2"
+  },
+  "main": "dist/expiring-value.js",
+  "files": [
+    "dist/expiring-value.d.ts"
+  ]
+}

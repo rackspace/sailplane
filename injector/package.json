@@ -1,0 +1,46 @@
+{
+  "name": "@sailplane/injector",
+  "version": "1.0.0",
+  "description": "Simple, light-weight, lazy-instantiating, and type-safe dependency injection in Typescript.",
+  "keywords": [
+    "di",
+    "dependency injection",
+    "typescript"
+  ],
+  "scripts": {
+    "build": "tsc && npm link",
+    "test": "jest --no-cache",
+    "test:watch": "jest --watch",
+    "clean:publish": "rm -r dist && npm run build && npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onicagroup/sailplane.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Onica Group",
+  "homepage": "https://docs.onica.com/projects/sailplane",
+  "contributors": [
+    "Adam Fanello"
+  ],
+  "devDependencies": {
+    "@sailplane/logger": "file:../logger",
+    "@types/jest": "^23.3.2",
+    "@types/node": "^8.10.10",
+    "aws-sdk": "^2.358.0",
+    "bottlejs": "^1.7.1",
+    "jest": "^23.6.0",
+    "ts-jest": "^23.10.2",
+    "ts-loader": "^2.3.7",
+    "ts-node": "^5.0.1",
+    "typescript": "^2.9.2"
+  },
+  "peerDependencies": {
+    "@sailplane/logger": "^1.0.0",
+    "bottlejs": "^1.7.1"
+  },
+  "main": "dist/injector.js",
+  "files": [
+    "dist/injector.d.ts"
+  ]
+}
