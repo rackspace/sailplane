@@ -11,7 +11,7 @@
     "build": "tsc && npm link",
     "test": "jest --no-cache",
     "test:watch": "jest --watch",
-    "clean:publish": "rm -r dist && npm run build && npm publish"
+    "clean:publish": "rm -r dist; npm run build && npm publish --access public"
   },
   "repository": {
     "type": "git",
@@ -21,11 +21,11 @@
   "author": "Onica Group",
   "homepage": "https://docs.onica.com/projects/sailplane",
   "contributors": [
-    "Adam Fanello"
+    "Adam Fanello <afanello@oncia.com>"
   ],
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
-    "@types/jest": "^23.3.2",
+    "@types/jest": "23.3.13",
     "@types/node": "^8.10.10",
     "aws-sdk": "^2.358.0",
     "bottlejs": "^1.7.1",

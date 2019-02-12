@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/aws-https",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "HTTPS client with AWS Signature v4",
   "keywords": [
     "aws",
@@ -13,7 +13,7 @@
     "build": "tsc && npm link",
     "test": "jest --runInBand --no-cache --verbose",
     "test:watch": "jest --watch --runInBand",
-    "clean:publish": "rm -r dist && npm run build && npm publish"
+    "clean:publish": "rm -r dist; npm run build && npm publish --access public"
   },
   "repository": {
     "type": "git",
@@ -23,11 +23,11 @@
   "author": "Onica Group",
   "homepage": "https://docs.onica.com/projects/sailplane",
   "contributors": [
-    "Adam Fanello"
+    "Adam Fanello <afanello@onica.com>"
   ],
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
-    "@types/jest": "^23.3.2",
+    "@types/jest": "23.3.13",
     "@types/node": "^8.10.10",
     "aws-sdk": "^2.358.0",
     "aws4": "^1.8.0",
