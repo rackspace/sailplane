@@ -1,6 +1,5 @@
 #!/bin/bash
-# npm install, test, and build each package.
-# Optional argument:
+# Requires one command:
 # - "clean" - delete all node_modules
 # - "build" - npm install, test, and build all packages
 # - "publish" - npm publish packages with new version numbers
