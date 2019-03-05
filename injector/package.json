@@ -21,7 +21,7 @@
   "author": "Onica Group",
   "homepage": "https://docs.onica.com/projects/sailplane",
   "contributors": [
-    "Adam Fanello <afanello@oncia.com>"
+    "Adam Fanello <afanello@onica.com>"
   ],
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
