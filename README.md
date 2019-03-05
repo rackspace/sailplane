@@ -6,3 +6,4 @@ as a set of tools for developing AWS serverless applications in Javascript and T
 
 Each directory contains another NPM project and is independently published. 
 See the docs directory for details of each project, or find it published [online](https://docs.onica.com/projects/sailplane).
+

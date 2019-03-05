@@ -128,7 +128,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'sailplane.tex', u'Lailplane Documentation',
+    (master_doc, 'sailplane.tex', u'Sailplane Documentation',
      u'Onica Group', 'manual'),
 ]
 
