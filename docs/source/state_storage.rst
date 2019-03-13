@@ -55,7 +55,7 @@ Your Lambda will need permission to access the Parameter Store. Here's an exampl
 
 .. code-block:: ts
 
-    import {StateStorage} from "@onica-serverless/state-storage";
+    import {StateStorage} from "@sailplane/state-storage";
 
     const stateStore = new StateStorage(process.env.STATE_STORAGE_PREFIX!);
 

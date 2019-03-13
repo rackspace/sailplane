@@ -15,10 +15,10 @@ Uses:
 
 .. code-block:: ts
 
-    import {AwsHttps} from "@onica-serverless/aws-https";
-    import {ElasticsearchClient} from "@onica-serverless/elasticsearch-client";
-    import {Injector} from "@onica-serverless/injector";
-    import {Logger} from "@onica-serverless/logger";
+    import {AwsHttps} from "@sailplane/aws-https";
+    import {ElasticsearchClient} from "@sailplane/elasticsearch-client";
+    import {Injector} from "@sailplane/injector";
+    import {Logger} from "@sailplane/logger";
     import {Ticket} from "./ticket";
 
     const logger = new Logger('ticket-storage');
@@ -158,8 +158,8 @@ This example shows how to:
 
     import 'source-map-support/register';
     import {APIGatewayEvent} from 'aws-lambda';
-    import {Injector} from "@onica-serverless/injector";
-    import * as LambdaUtils from "@onica-serverless/lambda-utils";
+    import {Injector} from "@sailplane/injector";
+    import * as LambdaUtils from "@sailplane/lambda-utils";
     import {ChatService} from "./chat-service";
     import * as createHttpError from "http-errors";
 
@@ -178,10 +178,10 @@ This example shows how to:
 .. code-block:: ts
 
     // chat-service.ts
-    import {AwsHttps} from "@onica-serverless/aws-https";
-    import {ExpiringValue} from "@onica-serverless/expiring-value";
-    import {Injector} from "@onica-serverless/injector";
-    import {Logger} from "@onica-serverless/logger";
+    import {AwsHttps} from "@sailplane/aws-https";
+    import {ExpiringValue} from "@sailplane/expiring-value";
+    import {Injector} from "@sailplane/injector";
+    import {Logger} from "@sailplane/logger";
     import {URL} from "url";
     import * as createHttpError from "http-errors";
 

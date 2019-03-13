@@ -60,7 +60,7 @@ General use
 .. code-block:: ts
 
     import {APIGatewayEvent} from 'aws-lambda';
-    import * as LambdaUtils from "@onica-serverless/lambda-utils";
+    import * as LambdaUtils from "@sailplane/lambda-utils";
     import * as createError from "http-errors";
 
     export const hello = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent) => {
@@ -89,7 +89,7 @@ Extending LambdaUtils for your own app
 .. code-block:: ts
 
     import {ProxyHandler} from "aws-lambda";
-    import * as LambdaUtils from "@onica-serverless/lambda-utils";
+    import * as LambdaUtils from "@sailplane/lambda-utils";
     import {userAuthMiddleware} from "./user-auth"; //you write this
 
     export interface WrapApiHandlerOptions {
