@@ -37,7 +37,7 @@ Example:
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
 
     export class MyService {
     }
@@ -61,7 +61,7 @@ Example:
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
 
     export class MyHelper {
     }
@@ -92,7 +92,7 @@ Example:
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
 
     export class MyHelper {
     }
@@ -120,7 +120,7 @@ Example:
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
 
     export class MyHelper {
     }
@@ -150,7 +150,7 @@ Example: Inject a configuration
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
 
     Injector.registerFactory('config', () => {
         // Note that this returns a Promise
@@ -165,7 +165,7 @@ Example: Inject an interface implementation
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
 
     export interface FoobarService {
         doSomething(): void;
@@ -214,7 +214,7 @@ Example:
 
 .. code-block:: ts
 
-    import {Injector} from "@onica-serverless/injector";
+    import {Injector} from "@sailplane/injector";
     import {environment} from "environment";
 
     Injector.registerConstant('environment-config', environment);

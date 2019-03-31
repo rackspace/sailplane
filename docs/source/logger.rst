@@ -28,7 +28,7 @@ Examples
 
 .. code-block:: ts
 
-    import {Logger, LogLevels} from "@onica-serverless/logger";
+    import {Logger, LogLevels} from "@sailplane/logger";
     const logger = new Logger('name-of-module');
 
     logger.info("Hello World!");
