@@ -16,6 +16,8 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import os
+import subprocess
 
 # -- Project information -----------------------------------------------------
 
@@ -171,3 +173,54 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
+
+def setup(app):
+    """Handle Sphynx lifecycle setup."""
+    # Make npm link work by fixing npm global location
+    if not os.path.isdir(os.path.expanduser('~/.npm-global')):
+        os.mkdir(os.path.expanduser('~/.npm-global'))
+        subprocess.check_call(['npm',
+                               'config',
+                               'set',
+                               'prefix',
+                               '~/.npm-global'])
+        subprocess.check_call(['npm',
+                               'i',
+                               '-g',
+                               'npm'])
+
+        prevdir = os.getcwd()
+        os.chdir(
+            os.path.expanduser(
+                os.path.dirname(os.path.dirname(os.path.dirname(
+                    os.path.abspath(__file__)
+                )))
+            )
+        )
+        try:
+            # disabling redundant doc build
+            subprocess.check_call(['sed',
+                                   '-i',
+                                   's/make html/# make html/g',
+                                   'make.sh'])
+
+            # Use updated npm
+            subprocess.check_call(['sed',
+                                   '-i',
+                                   's/npm/~\/.npm-global\/bin\/npm/g',
+                                   'make.sh'])
+            subprocess.check_call(['find',
+                                   './',
+                                   '-name',
+                                   'package.json',
+                                   '-exec',
+                                   'sed',
+                                   '-i',
+                                   's/npm /~\/.npm-global\/bin\/npm /g',
+                                   '{}',
+                                   '+'])
+
+            subprocess.check_call(['./make.sh', 'build'])
+        finally:
+            os.chdir(prevdir)
