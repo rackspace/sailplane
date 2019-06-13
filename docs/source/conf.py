@@ -16,6 +16,8 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import os
+import subprocess
 
 # -- Project information -----------------------------------------------------
 
@@ -171,3 +173,20 @@ epub_title = project
 
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
+
+
+def setup(app):
+    """Handle Sphynx lifecycle setup."""
+    # Components of the docs need to be built first
+    prevdir = os.getcwd()
+    os.chdir(
+        os.path.expanduser(
+            os.path.dirname(os.path.dirname(os.path.dirname(
+                os.path.abspath(__file__)
+            )))
+        )
+    )
+    try:
+        subprocess.check_call(['./make.sh', 'build'])
+    finally:
+        os.chdir(prevdir)
