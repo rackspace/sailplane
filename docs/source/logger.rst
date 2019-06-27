@@ -51,9 +51,47 @@ Examples
     //   message: "oops"
     // }
 
-Default formatting has no timestamps and no pretty formatting for JSON objects. This is optimum
-for CloudWatch use. If serverless-offline is detected, timestamps and JSON pretty formatting are
-automatically enabled for ideal terminal window viewing.
+Configuration / Behavior
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The output of Logger varies based on some global settings, whether the Lambda is executing
+in AWS or local (serverless-offline, SAM offline), and whether the runtime is Node.js 10 vs
+earlier versions.
+
+globalLogLevel
+--------------
+
+Only this level and higher will be output. Options are 'DEBUG', 'INFO', 'WARN', 'ERROR', 'NONE'.
+Default is 'DEBUG'.
+
+Override programmatically:  ``Logger.globalLogLevel = 'WARN';``
+
+Override from environment variable: ``export LOG_LEVEL=INFO``
+
+outputLevels
+-------------
+If true, output level text on each line.
+
+Default is true when running outside of AWS Lambda environment, and in a Lambda runtime earlier than Node.js v10.
+Starting with Node.js v10, the Lambda runtime itself adds log levels to the output sent to CloudWatch. This is detected
+and outputLevels is set to false.
+
+Override programmatically: ``Logger.outputLevels = false;``
+
+logTimestamps
+-------------
+Output date & time prefix on logged lines?
+
+Timestamps are enabled outside of AWS Lambda, and disabled in AWS Lambda where CloudWatch provides time stamping.
+
+Override programmatically: ``Logger.logTimestamps = false;``
+
+formatObjects
+-------------
+If true, objects logged by debugObject(), infoObject(), warnObject() and errorObject() will be formatted with
+proper indentation. If false, no formatting is performed.
+
+Formatting is enabled outside of AWS Lambda, and disabled in AWS Lambda where CloudWatch provides formatting.
 
 Type Declarations
 ^^^^^^^^^^^^^^^^^

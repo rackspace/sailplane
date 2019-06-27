@@ -42,7 +42,7 @@ module.exports = {
   // An object that configures minimum threshold enforcement for coverage results
   coverageThreshold: {
       "./lib": {
-          branches: 94,
+          branches: 80,
           functions: 100,
           statements: 100
       }
