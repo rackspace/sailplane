@@ -206,12 +206,6 @@ def setup(app):
                 )
             )
             try:
-                # disabling redundant doc build
-                makefileobj = fileinput.input('make.sh', inplace=True)
-                for line in makefileobj:
-                    print(line.replace(r'make html', '# make html'), end='')
-                makefileobj.close()
-
                 # Use updated npm
                 makefileobj = fileinput.input('make.sh', inplace=True)
                 for line in makefileobj:
