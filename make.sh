@@ -32,12 +32,16 @@ if [[ $COMMAND == build || $COMMAND == all ]]; then
       popd
     done
 
-    echo
-    echo "***** Build documentation: docs"
-    echo
-    pushd docs
-    make html || exit $?
-    popd
+    if [[ -z "$RTD_BUILD" ]]; then
+        echo
+        echo "***** Build documentation: docs"
+        echo
+        pushd docs
+        make html || exit $?
+        popd
+    else
+        echo "(skiping documentation build in ReadTheDocs)"
+    fi
 fi
 
 if [[ $COMMAND == publish || $COMMAND == all ]]; then

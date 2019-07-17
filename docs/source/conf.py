@@ -5,6 +5,7 @@
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
+from __future__ import print_function
 
 # -- Path setup --------------------------------------------------------------
 
@@ -16,6 +17,8 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import fileinput
+import fnmatch
 import os
 import subprocess
 
@@ -177,50 +180,50 @@ epub_exclude_files = ['search.html']
 
 def setup(app):
     """Handle Sphynx lifecycle setup."""
-    # Make npm link work by fixing npm global location
-    if not os.path.isdir(os.path.expanduser('~/.npm-global')):
-        os.mkdir(os.path.expanduser('~/.npm-global'))
-        subprocess.check_call(['npm',
-                               'config',
-                               'set',
-                               'prefix',
-                               '~/.npm-global'])
-        subprocess.check_call(['npm',
-                               'i',
-                               '-g',
-                               'npm'])
+    # RTD_BUILD environment variable is set in the ReadTheDocs admin console
+    # so we have an easy to check if we're running in their hosted build
+    # environment
+    if os.environ.get('RTD_BUILD'):
+        # Make npm link work by fixing npm global location
+        if not os.path.isdir(os.path.expanduser('~/.npm-global')):
+            os.mkdir(os.path.expanduser('~/.npm-global'))
+            subprocess.check_call(['npm',
+                                   'config',
+                                   'set',
+                                   'prefix',
+                                   '~/.npm-global'])
+            subprocess.check_call(['npm',
+                                   'i',
+                                   '-g',
+                                   'npm'])
 
-        prevdir = os.getcwd()
-        os.chdir(
-            os.path.expanduser(
-                os.path.dirname(os.path.dirname(os.path.dirname(
-                    os.path.abspath(__file__)
-                )))
+            prevdir = os.getcwd()
+            os.chdir(
+                os.path.expanduser(
+                    os.path.dirname(os.path.dirname(os.path.dirname(
+                        os.path.abspath(__file__)
+                    )))
+                )
             )
-        )
-        try:
-            # disabling redundant doc build
-            subprocess.check_call(['sed',
-                                   '-i',
-                                   's/make html/# make html/g',
-                                   'make.sh'])
+            try:
+                # Use updated npm
+                makefileobj = fileinput.input('make.sh', inplace=True)
+                for line in makefileobj:
+                    print(line.replace(r'npm', '~/.npm-global/bin/npm'),
+                          end='')
+                makefileobj.close()
+                for root, dirnames, filenames in os.walk('.'):
+                    for filename in fnmatch.filter(filenames, 'package.json'):
+                        pkgfileobj = fileinput.input(
+                            os.path.join(root, filename),
+                            inplace=True
+                        )
+                        for line in pkgfileobj:
+                            print(line.replace(r'npm ',
+                                               '~/.npm-global/bin/npm '),
+                                  end='')
+                        pkgfileobj.close()
 
-            # Use updated npm
-            subprocess.check_call(['sed',
-                                   '-i',
-                                   's/npm/~\/.npm-global\/bin\/npm/g',
-                                   'make.sh'])
-            subprocess.check_call(['find',
-                                   './',
-                                   '-name',
-                                   'package.json',
-                                   '-exec',
-                                   'sed',
-                                   '-i',
-                                   's/npm /~\/.npm-global\/bin\/npm /g',
-                                   '{}',
-                                   '+'])
-
-            subprocess.check_call(['./make.sh', 'build'])
-        finally:
-            os.chdir(prevdir)
+                subprocess.check_call(['./make.sh', 'build'])
+            finally:
+                os.chdir(prevdir)
