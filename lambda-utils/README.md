@@ -16,7 +16,7 @@ but by itself you are still repeating the middleware registrations
 on each handler, its exception handler only works with errors created by the http-errors package,
 and you still have to format your response in the shape required by API Gateway.
 
-`LambadUtils` takes Middy further and is extendable so that you can add your own
+`LambdaUtils` takes Middy further and is extendable so that you can add your own
 middleware (authentication & authorization, maybe?) on top of it.
 
 Used with API Gateway, the included middlewares:
