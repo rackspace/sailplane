@@ -21,19 +21,16 @@ export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Pr
 export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
     /**
      * HTTP Request body, parsed from a JSON string into an object.
-     * @property body
      */
     body: any | null;
 
     /**
      * HTTP Path Parameters, parsed from a JSON string into an object
-     * @property pathParameters
      */
     pathParameters: { [name: string]: string };
 
     /**
      * HTTP URL query string parameters, parsed from a JSON string into an object
-     * @property pathParameters
      */
     queryStringParameters: { [name: string]: string };
 }
