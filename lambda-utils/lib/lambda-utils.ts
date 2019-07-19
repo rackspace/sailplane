@@ -1,4 +1,9 @@
-import {APIGatewayEvent, APIGatewayProxyEvent, Context, ProxyResult} from "aws-lambda";
+import {
+    APIGatewayProxyEvent as AWS_APIGatewayProxyEvent,
+    APIGatewayEvent,
+    Context,
+    ProxyResult
+} from "aws-lambda";
 import * as middy from "middy";
 import {cors, httpEventNormalizer, httpHeaderNormalizer, jsonBodyParser} from "middy/middlewares";
 import {Logger} from "@sailplane/logger";
@@ -13,7 +18,7 @@ export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Pr
  *
  * @typedef {Interface}
  */
-export interface ISailplaneAPIGatewayProxyEvent extends APIGatewayProxyEvent {
+export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
     /**
      * HTTP Request body, parsed from a JSON string into an object.
      * @property body
