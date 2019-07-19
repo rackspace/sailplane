@@ -12,7 +12,6 @@ export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Pr
  * Casted interface for APIGatewayProxyEvents converted through the middleware
  *
  * @typedef {Interface}
- * @property {any} body The cast JSON -> object body element
  */
 export interface ISailplaneAPIGatewayProxyEvent extends APIGatewayProxyEvent {
     /**
