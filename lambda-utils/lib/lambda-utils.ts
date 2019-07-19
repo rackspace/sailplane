@@ -15,11 +15,22 @@ export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Pr
  */
 export interface ISailplaneAPIGatewayProxyEvent extends APIGatewayProxyEvent {
     /**
-     * Cast JSON -> object body element
+     * HTTP Request body, parsed from a JSON string into an object.
      * @property body
-     * @type {any}
      */
     body: any;
+
+    /**
+     * HTTP Path Parameters, parsed from a JSON string into an object
+     * @property pathParameters
+     */
+    pathParameters: { [name: string]: string };
+
+    /**
+     * HTTP URL query string parameters, parsed from a JSON string into an object
+     * @property pathParameters
+     */
+    queryStringParameters: { [name: string]: string };
 }
 
 /**
