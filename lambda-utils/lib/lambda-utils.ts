@@ -23,7 +23,7 @@ export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
      * HTTP Request body, parsed from a JSON string into an object.
      * @property body
      */
-    body: any;
+    body: any | null;
 
     /**
      * HTTP Path Parameters, parsed from a JSON string into an object
