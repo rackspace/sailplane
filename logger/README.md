@@ -12,8 +12,8 @@ timestamps, context/category names, and object formatting. It's just a few small
 yet together takes logging a leap forward. It'll do until we can have a usable cloud debugger. 
 
 There are far more complicated logging packages available for Javascript;
-but sailplane is all about simplicity, and this logger gets you all that
-you really need without all the bulk.
+but sailplane is all about simplicity, and this logger gives you all that
+you really need without the bulk.
 
 ## How?
 See the [doc site](https://docs.onica.com/projects/sailplane) for usage and examples.

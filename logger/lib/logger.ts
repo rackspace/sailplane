@@ -1,17 +1,21 @@
 
 export enum LogLevels {
-    ERROR, WARN, INFO, DEBUG
+    NONE, ERROR, WARN, INFO, DEBUG
 }
 
 const LogLevelsMap = {
+    'NONE': LogLevels.NONE,
     'ERROR': LogLevels.ERROR,
     'WARN': LogLevels.WARN,
     'INFO': LogLevels.INFO,
     'DEBUG': LogLevels.DEBUG
 };
 
-// Detect serverless-offline - impacts default config
-const IsServerlessOffline = (process.env.IS_OFFLINE === 'true');
+// Detect Lambda streaming to CloudWatch
+const IsCloudWatch = !!process.env.AWS_LAMBDA_LOG_GROUP_NAME;
+
+// Is Node.js version anything older than v10?
+const IsOldNode = process.version.match(/^v[0-9]\./) != null;
 
 /**
  * Custom logger class.
@@ -32,22 +36,30 @@ export class Logger {
     static globalLogLevel: LogLevels = LogLevelsMap[process.env.LOG_LEVEL||'DEBUG'] || LogLevels.DEBUG;
 
     /**
+     * Include the level in log output?
+     * Defaults to true if not streaming to CloudWatch or running Node.js v9 or older.
+     * May also be set directly by code.
+     * Note: AWS behavior changed with nodejs10.x runtime - it now includes log levels automatically.
+     */
+    static outputLevels = !IsCloudWatch || IsOldNode;
+
+    /**
      * Include timestamps in log output?
-     * Defaults to true if serverless-offline environment detected, false otherwise.
+     * Defaults to false if streaming to CloudWatch, true otherwise.
      * (CloudWatch provides timestamps.)
-     * May enable by setting the LOG_TIMESTAMPS environment variable to any value,
+     * May override by setting the LOG_TIMESTAMPS environment variable to 'true' or 'false',
      * or set by code.
      */
-    static logTimestamps = IsServerlessOffline || !!process.env.LOG_TIMESTAMPS;
+    static logTimestamps = process.env.LOG_TIMESTAMPS ? process.env.LOG_TIMESTAMPS === 'true' : !IsCloudWatch ;
 
     /**
      * Pretty format objects when stringified to JSON?
-     * Defaults to true if serverless-offline environment detected, false otherwise.
+     * Defaults to false if streaming to CloudWatch, true otherwise.
      * (Best to let CloudWatch provide the formatting.)
-     * May enable by setting the LOG_FORMAT_OBJECTS environment variable to any value,
+     * May override by setting the LOG_FORMAT_OBJECTS environment variable to 'true' or 'false',
      * or set by code.
      */
-    static formatObjects = IsServerlessOffline || !!process.env.LOG_FORMAT_OBJECTS;
+    static formatObjects = process.env.LOG_FORMAT_OBJECTS ? process.env.LOG_FORMAT_OBJECTS === 'true' : !IsCloudWatch;
 
     /**
      * Construct.
@@ -58,45 +70,56 @@ export class Logger {
     }
 
     /**
-     * Log a line. Usually better to use #debug, #info, #warn, or #error instead.
+     * Format a log line. Helper for #debug, #info, #warn, and #error.
      *
      * @param level logging level
      * @param message text to log
      * @param optionalParams A list of JavaScript objects to output.
      *                       The string representations of each of these objects are
      *                       appended together in the order listed and output.
+     * @return array to pass to a console function, or null to output nothing.
      */
-    log(level: LogLevels, message: any, optionalParams: any[]): void {
-        if (level > Logger.globalLogLevel)
-            return;
-
-        // Only add timestamp on console output. CloudWatch tags the time on its own.
-        const prefix =
-            (Logger.logTimestamps ? new Date().toISOString().substr(0,19) + ' ' : '')
-            + LogLevels[level] + ' ' + this.category + ': ';
-
-        if (typeof message === 'string') {
-            console.log(prefix + message, ...optionalParams);
+    private formatLog(level: LogLevels, message: any, optionalParams?: any[]): any[] | null {
+        if (level > Logger.globalLogLevel) {
+            return null;
         }
-        else {
-            console.log(prefix, message, ...optionalParams);
+
+        const out: any[] = [];
+        if (Logger.logTimestamps) {
+            out.push(new Date().toISOString().substr(0,19));
         }
+
+        if (Logger.outputLevels) {
+            out.push(LogLevels[level]);
+        }
+
+        out.push(this.category + ':');
+        out.push(message);
+        if (optionalParams && optionalParams.length) {
+            optionalParams.forEach(p => out.push(p));
+        }
+
+        return out;
     }
 
     /**
-     * Log a line with a stringified object.
-     * Usually better to use #debugObject, #infoObject, #warnObject, or #errorObject
-     * instead.
+     * Format a log ine with a stringified object.
+     * Helper for #debugObject, #infoObject, #warnObject, and #errorObject.
      *
      * @param level logging level
      * @param message text to log - may want to end with a space,
      *                as `{` will immediately follow.
      * @param object object to stringify to JSON and append to message
+     * @return array to pass to a console function, or null to output nothing.
      */
-    logStringified(level: LogLevels, message: string, object: any): void {
+    private formatLogStringified(level: LogLevels, message: string, object: any): any[] | null {
+        if (level > Logger.globalLogLevel) {
+            return null;
+        }
+
         // In local console environment, pretty format the object; in AWS, allow CloudWatch to format it.
         const objStr = Logger.formatObjects ? JSON.stringify(object,null,2) : JSON.stringify(object);
-        this.log(level, message + objStr, []);
+        return this.formatLog(level, message + objStr);
     }
 
     /**
@@ -108,7 +131,10 @@ export class Logger {
      *                       appended together in the order listed and output.
      */
     debug(message: any, ...optionalParams: any[]): void {
-        this.log(LogLevels.DEBUG, message, optionalParams);
+        const content = this.formatLog(LogLevels.DEBUG, message, optionalParams);
+        if (content) {
+            console.debug(...content);
+        }
     }
 
     /**
@@ -120,7 +146,10 @@ export class Logger {
      *                       appended together in the order listed and output.
      */
     info(message: any, ...optionalParams: any[]): void {
-        this.log(LogLevels.INFO, message, optionalParams);
+        const content = this.formatLog(LogLevels.INFO, message, optionalParams);
+        if (content) {
+            console.info(...content);
+        }
     }
 
     /**
@@ -132,7 +161,10 @@ export class Logger {
      *                       appended together in the order listed and output.
      */
     warn(message: any, ...optionalParams: any[]): void {
-        this.log(LogLevels.WARN, message, optionalParams);
+        const content = this.formatLog(LogLevels.WARN, message, optionalParams);
+        if (content) {
+            console.warn(...content);
+        }
     }
 
     /**
@@ -144,7 +176,10 @@ export class Logger {
      *                       appended together in the order listed and output.
      */
     error(message: any, ...optionalParams: any[]): void {
-        this.log(LogLevels.ERROR, message, optionalParams);
+        const content = this.formatLog(LogLevels.ERROR, message, optionalParams);
+        if (content) {
+            console.error(...content);
+        }
     }
 
     /**
@@ -155,7 +190,10 @@ export class Logger {
      * @param object object to stringify to JSON and append to message
      */
     debugObject(message: string, object: any): void {
-        this.logStringified(LogLevels.DEBUG, message, object);
+        const content = this.formatLogStringified(LogLevels.DEBUG, message, object);
+        if (content) {
+            console.debug(...content);
+        }
     }
 
     /**
@@ -166,7 +204,10 @@ export class Logger {
      * @param object object to stringify to JSON and append to message
      */
     infoObject(message: string, object: any): void {
-        this.logStringified(LogLevels.INFO, message, object);
+        const content = this.formatLogStringified(LogLevels.INFO, message, object);
+        if (content) {
+            console.info(...content);
+        }
     }
 
     /**
@@ -177,7 +218,10 @@ export class Logger {
      * @param object object to stringify to JSON and append to message
      */
     warnObject(message: string, object: any): void {
-        this.logStringified(LogLevels.WARN, message, object);
+        const content = this.formatLogStringified(LogLevels.WARN, message, object);
+        if (content) {
+            console.warn(...content);
+        }
     }
 
     /**
@@ -188,6 +232,9 @@ export class Logger {
      * @param object object to stringify to JSON and append to message
      */
     errorObject(message: string, object: any): void {
-        this.logStringified(LogLevels.ERROR, message, object);
+        const content = this.formatLogStringified(LogLevels.ERROR, message, object);
+        if (content) {
+            console.error(...content);
+        }
     }
 }
