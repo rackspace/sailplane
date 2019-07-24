@@ -25,12 +25,12 @@ export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
     body: any | null;
 
     /**
-     * HTTP Path Parameters, parsed from a JSON string into an object
+     * HTTP Path Parameters, always defined, never null
      */
     pathParameters: { [name: string]: string };
 
     /**
-     * HTTP URL query string parameters, parsed from a JSON string into an object
+     * HTTP URL query string parameters, always defined, never null
      */
     queryStringParameters: { [name: string]: string };
 }
