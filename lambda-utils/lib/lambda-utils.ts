@@ -1,4 +1,9 @@
-import {APIGatewayEvent, Context, ProxyResult} from "aws-lambda";
+import {
+    APIGatewayProxyEvent as AWS_APIGatewayProxyEvent,
+    APIGatewayEvent,
+    Context,
+    ProxyResult
+} from "aws-lambda";
 import * as middy from "middy";
 import {cors, httpEventNormalizer, httpHeaderNormalizer, jsonBodyParser} from "middy/middlewares";
 import {Logger} from "@sailplane/logger";
@@ -7,6 +12,28 @@ const logger = new Logger('lambda-utils');
 
 /** Define the async version of ProxyHandler */
 export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Promise<any>;
+
+/**
+ * Casted interface for APIGatewayProxyEvents converted through the middleware
+ *
+ * @typedef {Interface}
+ */
+export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
+    /**
+     * HTTP Request body, parsed from a JSON string into an object.
+     */
+    body: any | null;
+
+    /**
+     * HTTP Path Parameters, always defined, never null
+     */
+    pathParameters: { [name: string]: string };
+
+    /**
+     * HTTP URL query string parameters, always defined, never null
+     */
+    queryStringParameters: { [name: string]: string };
+}
 
 /**
  * Middleware to handle any otherwise unhandled exception by logging it and generating
