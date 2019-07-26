@@ -168,9 +168,9 @@ This example shows how to:
     /**
      * Fetch history of chat on the user's channel
      */
-    export const getChatHistory = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent) => {
-        const channel = event.queryStringParameters!.channel;
-        const cursor = event.queryStringParameters!.cursor;
+    export const getChatHistory = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent) => {
+        const channel = event.queryStringParameters.channel;
+        const cursor = event.queryStringParameters.cursor;
 
         return Injector.get(ChatService)!.getHistory(channel, cursor);
     });
