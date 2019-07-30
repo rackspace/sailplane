@@ -14,9 +14,7 @@ const logger = new Logger('lambda-utils');
 export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Promise<any>;
 
 /**
- * Casted interface for APIGatewayProxyEvents converted through the middleware
- *
- * @typedef {Interface}
+ * Casted interface for APIGatewayProxyEvents as converted through the middleware
  */
 export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
     /**

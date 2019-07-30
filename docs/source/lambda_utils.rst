@@ -63,10 +63,10 @@ General use
     import * as LambdaUtils from "@sailplane/lambda-utils";
     import * as createError from "http-errors";
 
-    export const hello = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent) => {
-        // These event objects are now always defined, so we can safely (!) them.
-        const who = event.pathParameters!.who;
-        const points = parseInt(event.queryStringParameters!.points);
+    export const hello = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent) => {
+        // These event objects are now always defined, so don't need to check for undefined. 🙂
+        const who = event.pathParameters.who;
+        const points = parseInt(event.queryStringParameters.points || 0);
 
         if (points > 0) {
             let message = 'Hello ' + who;
