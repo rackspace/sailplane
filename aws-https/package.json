@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/aws-https",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "HTTPS client with AWS Signature v4",
   "keywords": [
     "aws",
@@ -30,7 +30,6 @@
     "@types/jest": "23.3.13",
     "@types/node": "^8.10.10",
     "aws-sdk": "^2.358.0",
-    "aws4": "^1.8.0",
     "jest": "^23.6.0",
     "nock": "^10.0.2",
     "ts-jest": "^23.10.2",
@@ -39,7 +38,11 @@
     "typescript": "^2.9.2"
   },
   "peerDependencies": {
-    "@sailplane/logger": "^1.0.0"
+    "@sailplane/logger": "^1.0.0",
+    "aws-sdk": "^2.358.0"
+  },
+  "dependencies": {
+    "aws4": "^1.8.0"
   },
   "main": "dist/aws-https.js",
   "files": [
