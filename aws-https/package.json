@@ -38,8 +38,8 @@
     "typescript": "^2.9.2"
   },
   "peerDependencies": {
-    "@sailplane/logger": "^1.0.0",
-    "aws-sdk": "^2.358.0"
+    "@sailplane/logger": "2.x.x",
+    "aws-sdk": "2.x.x"
   },
   "dependencies": {
     "aws4": "^1.8.0"
