@@ -7,7 +7,6 @@ import {
 import * as middy from "middy";
 import {cors, httpEventNormalizer, httpHeaderNormalizer, jsonBodyParser} from "middy/middlewares";
 import {Logger} from "@sailplane/logger";
-import {NextFunction} from "middy";
 
 const logger = new Logger('lambda-utils');
 
