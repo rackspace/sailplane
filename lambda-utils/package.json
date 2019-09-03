@@ -31,18 +31,17 @@
     "@types/node": "^8.10.10",
     "aws-sdk": "^2.358.0",
     "http-errors": "^1.7.1",
+    "middy": "^0.29.0",
     "jest": "^23.6.0",
     "ts-jest": "^23.10.2",
     "ts-loader": "^2.3.7",
     "ts-node": "^5.0.1",
     "typescript": "^2.9.2"
   },
-  "dependencies": {
-    "middy": "^0.29.0"
-  },
   "peerDependencies": {
     "@sailplane/logger": "2.x.x",
-    "aws-sdk": "2.x.x"
+    "aws-sdk": "2.x.x",
+    "middy": "0.x.x"
   },
   "main": "dist/lambda-utils.js",
   "files": [
