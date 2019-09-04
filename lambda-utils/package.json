@@ -38,7 +38,7 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "middy": "0.19.1"
+    "middy": "^0.29.0"
   },
   "peerDependencies": {
     "@sailplane/logger": "2.x.x",

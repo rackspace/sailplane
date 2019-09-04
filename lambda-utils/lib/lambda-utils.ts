@@ -40,7 +40,7 @@ export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
  * Fine tuned to work better than the Middy version.
  */
 export const unhandledExceptionMiddleware = () => ({
-    onError: (handler: middy.IHandlerLambda<APIGatewayEvent,ProxyResult>, next: middy.IMiddyNextFunction) => {
+    onError: (handler: middy.HandlerLambda<APIGatewayEvent,ProxyResult>, next: middy.NextFunction) => {
 
         logger.error('Unhandled exception:', handler.error);
 
@@ -62,7 +62,7 @@ export const unhandledExceptionMiddleware = () => ({
  * Must be registered as the last (thus first to run) "after" middleware.
  */
 export const resolvedPromiseIsSuccessMiddleware = () => ({
-    after: (handler: middy.IHandlerLambda<APIGatewayEvent,ProxyResult>, next: middy.IMiddyNextFunction) => {
+    after: (handler: middy.HandlerLambda<APIGatewayEvent,ProxyResult>, next: middy.NextFunction) => {
         // If response isn't a proper API result object, convert it into one.
         let r = handler.response;
         if (!r || typeof r !== 'object' || (!r.statusCode && !r.body)) {
@@ -96,7 +96,7 @@ export const resolvedPromiseIsSuccessMiddleware = () => ({
  * @see https://middy.js.org/docs/middlewares.html
  * @see https://www.npmjs.com/package/http-errors
  */
-export function wrapApiHandler(handler: AsyncProxyHandler): middy.IMiddy {
+export function wrapApiHandler(handler: AsyncProxyHandler): middy.Middy<APIGatewayEvent,ProxyResult> {
     return middy(handler)
         .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(jsonBodyParser())
         .use(cors())
