@@ -45,8 +45,7 @@ in previous minor version bumps. LambdaUtils has been built and tested with Midd
 Middy version beyond 0.29.0 may produce some weird errors.
 
 
-``LambdaUtils`` depends on two other utilities
- to work:
+``LambdaUtils`` depends on two other utilities to work:
 
 - :doc:`logger`
 - `Middy <https://middy.js.org>`_
