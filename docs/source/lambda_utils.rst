@@ -39,17 +39,23 @@ Not all Middy middlewares are in this implementation, only common ones that are 
 APIs. You may extend LambdaUtils's ``wrapApiHandler()`` function in your projects,
 or use it as an example to write your own, to add more middleware!
 
+**WARNING**: Middy has, historically, introduced some `breaking changes <https://github.com/onicagroup/sailplane/issues/16>`_
+in previous minor version bumps. LambdaUtils has been built and tested with Middy
+0.29.0, and should continue to work with future versions, but bumping your
+Middy version beyond 0.29.0 may produce some weird errors.
 
-``LambdaUtils`` depends on one other utility to work:
+
+``LambdaUtils`` depends on two other utilities to work:
 
 - :doc:`logger`
+- `Middy <https://middy.js.org>`_
 
 Install
 ^^^^^^^
 
 .. code-block:: shell
 
-    npm install @sailplane/lambda-utils @sailplane/logger
+    npm install @sailplane/lambda-utils @sailplane/logger middy
 
 Examples
 ^^^^^^^^
