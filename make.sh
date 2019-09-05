@@ -2,6 +2,7 @@
 # Requires one command:
 # - "clean" - delete all node_modules
 # - "build" - npm install, test, and build all packages
+# - "check" - check what packages need to be published
 # - "publish" - npm publish packages with new version numbers
 # - "all" - do clean, build, & publish
 COMMAND=$1
@@ -44,7 +45,7 @@ if [[ $COMMAND == build || $COMMAND == all ]]; then
     fi
 fi
 
-if [[ $COMMAND == publish || $COMMAND == all ]]; then
+if [[ $COMMAND == check || $COMMAND == publish || $COMMAND == all ]]; then
     for DIR in $PROJECTS
     do
       pushd $DIR || exit $?
@@ -54,7 +55,9 @@ if [[ $COMMAND == publish || $COMMAND == all ]]; then
           echo
           echo "***** Publish: ${NAME}@${VER}"
           echo
-          npm publish || exit $?
+          if [[ $COMMAND != check ]]; then
+              npm publish || exit $?
+          fi
       else
           echo
           echo "***** Already Exists: ${NAME}@${VER}"
