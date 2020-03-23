@@ -1,0 +1,25 @@
+{
+  "name": "sailplane-injector-example",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "sls offline start"
+  },
+  "devDependencies": {
+    "serverless-offline": "^5.12.0",
+    "serverless-webpack": "^5.2.0",
+    "ts-loader": "^6.2.1",
+    "ts-node": "^8.5.2",
+    "typescript": "^3.7.2",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "@sailplane/injector": "^1.0.1",
+    "@sailplane/lambda-utils": "^2.0.0",
+    "@sailplane/logger": "^2.0.0",
+    "aws-sdk": "^2.580.0",
+    "bottlejs": "^1.7.2",
+    "middy": "^0.30.5"
+  }
+}

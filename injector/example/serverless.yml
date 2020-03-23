@@ -1,0 +1,24 @@
+service:
+  name: sailplane-injector-example
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-west-2'}
+  runtime: nodejs10.x
+  versionFunctions: false
+
+functions:
+  getCompanies:
+    handler: src/handlers.getCompanies
+    events:
+      - http:
+          method: get
+          path: admin/companies
+          cors: true
+    memorySize: 128
+    timeout: 10
