@@ -14,7 +14,7 @@ used repeatedly, and code being copied from one project to the next. These commo
 matured, and gathered into a reusable collection.
 
 Sailplane is the result: a collection of useful packages for use in developing code that runs in AWS.
-They are primarily used in Lambda functions, but most are useful in other services that use the Node.js 8+
+They are primarily used in Lambda functions, but most are useful in other services that use the Node.js 10+
 runtime as well.
 
 The Typescript source is compiled to ES6 Javascript for portability, along with Typescript type

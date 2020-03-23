@@ -1,7 +1,7 @@
 import {ElasticsearchClient, ElasticsearchResult} from "./elasticsearch-client";
 import {AwsHttps, AwsHttpsOptions} from "@sailplane/aws-https";
 
-describe("ElasticsearchClient", async () => {
+describe("ElasticsearchClient",() => {
 
     test('request() with data success', async () => {
         // GIVEN
