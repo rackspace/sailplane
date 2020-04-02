@@ -8,14 +8,14 @@ export class FakeAwsSuccessResult {
     }
 }
 
-describe('StateStorage', async () => {
-    describe('#set', async () => {
+describe('StateStorage', () => {
+    describe('#set', () => {
         let sut = new StateStorage('/prefix/');
 
         test('store something noisily', async () => {
             // GIVEN
             const mockPut = jest.fn(() => new FakeAwsSuccessResult(true));
-            sut['ssm'].putParameter = mockPut;
+            sut['ssm'].putParameter = mockPut as any;
 
             // WHEN
             await sut.set('service', 'name', {value: 'hello'});
@@ -30,7 +30,7 @@ describe('StateStorage', async () => {
         test('store something quietly', async () => {
             // GIVEN
             const mockPut = jest.fn(() => new FakeAwsSuccessResult(true));
-            sut['ssm'].putParameter = mockPut;
+            sut['ssm'].putParameter = mockPut as any;
 
             // WHEN
             await sut.set('service', 'name', {value: 'hello'}, true);
@@ -42,7 +42,7 @@ describe('StateStorage', async () => {
         })
     });
 
-    describe('#get', async () => {
+    describe('#get', () => {
         let sut = new StateStorage('/prefix');
 
         test('fetch something noisily', async () => {
@@ -52,7 +52,7 @@ describe('StateStorage', async () => {
                     Value: '{"value":"hello"}'
                 }
             }));
-            sut['ssm'].getParameter = mockGet;
+            sut['ssm'].getParameter = mockGet as any;
 
             // WHEN
             const result = await sut.get('service', 'name');
@@ -67,7 +67,7 @@ describe('StateStorage', async () => {
         test('fetch missing something quietly', async () => {
             // GIVEN
             const mockGet = jest.fn(() => new FakeAwsSuccessResult({}));
-            sut['ssm'].getParameter = mockGet;
+            sut['ssm'].getParameter = mockGet as any;
 
             // WHEN
             const result = await sut.get('service', 'name', true);
