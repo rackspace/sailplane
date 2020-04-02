@@ -31,8 +31,14 @@ export class AwsHttps {
      * Constructor.
      * @param verbose true to log everything, false for silence,
      *                undefined (default) for normal logging.
+     * @param refreshCredentials if `true` obtain fresh AWS credentials before signing
+     *            a new request. Otherwise, previous credentials may be reused. Not
+     *            needed in Lambdas, but longer running containers may rotate credentials.
      */
-    constructor(private readonly verbose?: boolean) {
+    constructor(private readonly verbose?: boolean, refreshCredentials = false) {
+        if (refreshCredentials) {
+            AwsHttps.credentialsPromise = undefined;
+        }
     }
 
     /**
@@ -68,7 +74,7 @@ export class AwsHttps {
                     if (!response.statusCode || response.statusCode < 200 || response.statusCode > 299) {
                         // HTTP status indicates failure. Throw http-errors compatible error.
                         const err: any = new Error('Failed to load content, status code: ' + response.statusCode);
-                        err.status = err.statusCode = response.statusCode||0;
+                        err.status = err.statusCode = response.statusCode || 0;
                         this.verbose !== false && logger.warnObject(err.message + " ", content);
                         reject(err);
                     }

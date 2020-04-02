@@ -27,6 +27,7 @@ describe('AwsHttps with AWS', () => {
             .post('/test', body)
             .reply(200, response);
         const sut = new AwsHttps(true);
+        expect(AwsHttps['credentialsPromise']).toBeUndefined();
 
         // WHEN
         const reply = await sut.request({
@@ -42,6 +43,12 @@ describe('AwsHttps with AWS', () => {
         // THEN
         expect(reply).toEqual(response);
         expect(scope.isDone()).toBeTruthy();
-    });
+        expect(AwsHttps['credentialsPromise']).toBeTruthy();
 
+        // TEST refresh credentials
+        const sutReusingCreds = new AwsHttps();
+        expect(AwsHttps['credentialsPromise']).toBeDefined();
+        const sutRefreshingCreds = new AwsHttps(false, true);
+        expect(AwsHttps['credentialsPromise']).toBeUndefined();
+    });
 });
