@@ -1,0 +1,14 @@
+# package directories
+node_modules
+package-lock.json
+jspm_packages
+
+# Serverless directories
+.serverless
+.serverless_plugins
+
+# Webpack directories
+.webpack
+
+# IDEs
+.idea

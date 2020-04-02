@@ -15,3 +15,6 @@ you may still prefer this simplified interface over using BottleJS directly.
 
 ## How?
 See the [doc site](https://docs.onica.com/projects/sailplane) for usage and examples.
+
+There's also a small working example of Injector in the `example` directory.
+It includes [Serverless Framework](https://serverless.com/), [Webpack](https://webpack.js.org/), and @sailplane/lambda-utils.
