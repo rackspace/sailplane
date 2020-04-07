@@ -11,8 +11,9 @@ const LogLevelsMap = {
     'DEBUG': LogLevels.DEBUG
 };
 
-// Detect Lambda streaming to CloudWatch
-const IsCloudWatch = !!process.env.AWS_LAMBDA_LOG_GROUP_NAME;
+// If not running in an interactive shell (such is the case for AWS Lambda environment)
+// or the LOG_TO_CLOUDWATCH environment is set, then format output for CloudWatch.
+const IsCloudWatch = process.env.LOG_TO_CLOUDWATCH ? process.env.LOG_TO_CLOUDWATCH === 'true' : !process.env.SHELL;
 
 // Is Node.js version anything older than v10?
 const IsOldNode = process.version.match(/^v[0-9]\./) != null;
