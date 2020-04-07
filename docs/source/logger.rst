@@ -58,6 +58,19 @@ The output of Logger varies based on some global settings, whether the Lambda is
 in AWS or local (serverless-offline, SAM offline), and whether the runtime is Node.js 10 vs
 earlier versions.
 
+Default behavior should work for Lambdas. If you are using Logger in another container (EC2, Fargate, ...)
+you likely will want to adjust these settings.
+
+CloudWatch detection
+--------------------
+
+The default behaviors of some configuration change depending on whether log output is going
+to CloudWatch vs local console. This is because within the AWS Lambda service, logging to
+stdout is automatically prefixed with the log level and times stamp. Local console does not
+So Logger adds these for you when a login shell (offline mode) is detected. You can force
+
+Override from environment variable ``export LOG_TO_CLOUDWATCH=true`` or ``export LOG_TO_CLOUDWATCH=false``
+
 globalLogLevel
 --------------
 
@@ -78,6 +91,8 @@ and outputLevels is set to false.
 
 Override programmatically: ``Logger.outputLevels = false;``
 
+Override from environment variable ``export LOG_TO_CLOUDWATCH=true`` or ``export LOG_TO_CLOUDWATCH=false``
+
 logTimestamps
 -------------
 Output date & time prefix on logged lines?
@@ -86,12 +101,18 @@ Timestamps are enabled outside of AWS Lambda, and disabled in AWS Lambda where C
 
 Override programmatically: ``Logger.logTimestamps = false;``
 
+Override from environment variable: ``export LOG_TIMESTAMPS=true``
+
 formatObjects
 -------------
 If true, objects logged by debugObject(), infoObject(), warnObject() and errorObject() will be formatted with
 proper indentation. If false, no formatting is performed.
 
 Formatting is enabled outside of AWS Lambda, and disabled in AWS Lambda where CloudWatch provides formatting.
+
+Override programmatically: ``Logger.formatObjects = false;``
+
+Override from environment variable: ``export LOG_FORMAT_OBJECTS=true``
 
 Type Declarations
 ^^^^^^^^^^^^^^^^^
