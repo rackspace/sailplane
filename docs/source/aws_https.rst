@@ -41,7 +41,7 @@ Simple example to GET from URL:
     const ping = await http.request(options);
 
 
-Example hitting API with IAM credentials:
+Example hitting API with the container's AWS credentials:
 
 .. code-block:: ts
 
@@ -77,6 +77,28 @@ Example hitting API with IAM credentials:
             throw err;
         }
     }
+
+Example hitting API with the custom AWS credentials:
+
+.. code-block:: ts
+
+    // Call my helper function to get credentials with AWS.STS
+    const roleCredentials = await this.getAssumeRoleCredentials();
+
+    const awsCredentials = {
+        accessKey: roleCredentials.AccessKeyId,
+        secretKey: roleCredentials.SecretAccessKey,
+        sessionToken: roleCredentials.SessionToken,
+    };
+    const http = new AwsHttps(false, awsCredentials);
+
+    // Build request options from a method and URL
+    const url = new URL('https://www.onica.com/ping.json');
+    const options = http.buildOptions('GET' url);
+
+    // Make request and parse JSON response.
+    const ping = await http.request(options);
+
 
 The :doc:`elasticsearch_client` package is a simple example using AwsHttps.
 

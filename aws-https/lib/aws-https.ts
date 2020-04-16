@@ -20,24 +20,40 @@ export type AwsHttpsOptions = https.RequestOptions & {
     awsSign?: boolean
 };
 
+export type AwsCredentials = AWS.Credentials | {
+    accessKeyId: string
+    secretAccessKey: string
+    sessionToken?: string
+}
+
 /**
  * Light-weight utility for making HTTPS requests in AWS environments.
  */
 export class AwsHttps {
     /** Resolves when credentials are available - shared by all instances */
-    private static credentialsPromise: Promise<void>|undefined = undefined;
+    private static credentialsInitializedPromise: Promise<void>|undefined = undefined;
+
+    /** Credentials to use in this instance */
+    private awsCredentials?: AwsCredentials = undefined;
 
     /**
      * Constructor.
      * @param verbose true to log everything, false for silence,
      *                undefined (default) for normal logging.
-     * @param refreshCredentials if `true` obtain fresh AWS credentials before signing
-     *            a new request. Otherwise, previous credentials may be reused. Not
-     *            needed in Lambdas, but longer running containers may rotate credentials.
+     * @param credentials
+     *      If not defined, credentials will be obtained by default SDK behavior for the runtime environment.
+     *                      This happens once and then is cached; good for Lambdas.
+     *      If `true`, clear cached to obtain fresh credentials from SDK.
+     *                 Good for longer running containers that rotate credentials.
+     *      If an object with accessKeyId, secretAccessKey, and sessionToken,
+     *                 use these credentials for this instance.
      */
-    constructor(private readonly verbose?: boolean, refreshCredentials = false) {
-        if (refreshCredentials) {
-            AwsHttps.credentialsPromise = undefined;
+    constructor(private readonly verbose?: boolean, credentials?: boolean | AwsCredentials) {
+        if (credentials) {
+            AwsHttps.credentialsInitializedPromise = undefined;
+            if (typeof credentials === 'object' && credentials.accessKeyId) {
+                this.awsCredentials = credentials;
+            }
         }
     }
 
@@ -147,30 +163,32 @@ export class AwsHttps {
      * @return signed version of the request.
      */
     private async awsSign(request: AwsHttpsOptions): Promise<AwsHttpsOptions> {
-        if (!AwsHttps.credentialsPromise) {
-            // Prepare AWS credentials
-            AwsHttps.credentialsPromise = new Promise((resolve, reject) => {
-                AWS.config.getCredentials((err) => {
-                    if (err) {
-                        logger.error("Unable to load AWS credentials", err);
-                        reject(err);
-                    }
-                    else {
-                        resolve();
-                    }
+        if (!this.awsCredentials) {
+            if (!AwsHttps.credentialsInitializedPromise) {
+                // Prepare process-wide AWS credentials
+                AwsHttps.credentialsInitializedPromise = new Promise((resolve, reject) => {
+                    AWS.config.getCredentials((err) => {
+                        if (err) {
+                            logger.error("Unable to load AWS credentials", err);
+                            reject(err);
+                        }
+                        else {
+                            resolve();
+                        }
+                    });
                 });
-            });
+            }
+
+            // Wait for process-wide AWS credentials to be available
+            await AwsHttps.credentialsInitializedPromise;
+            this.awsCredentials = AWS.config.credentials!;
         }
 
-        // Wait for AWS credentials to be available
-        await AwsHttps.credentialsPromise;
-
         // Sign the request
-        const c = AWS.config.credentials!;
         const signCreds = {
-            accessKeyId: c.accessKeyId,
-            secretAccessKey: c.secretAccessKey,
-            sessionToken: c.sessionToken
+            accessKeyId: this.awsCredentials.accessKeyId,
+            secretAccessKey: this.awsCredentials.secretAccessKey,
+            sessionToken: this.awsCredentials.sessionToken
         };
         return aws4.sign(request, signCreds);
     }
