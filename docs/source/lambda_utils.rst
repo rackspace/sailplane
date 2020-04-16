@@ -72,7 +72,7 @@ General use
     export const hello = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent) => {
         // These event objects are now always defined, so don't need to check for undefined. 🙂
         const who = event.pathParameters.who;
-        const points = parseInt(event.queryStringParameters.points || 0);
+        let points = Number(event.queryStringParameters.points || '0');
 
         if (points > 0) {
             let message = 'Hello ' + who;
