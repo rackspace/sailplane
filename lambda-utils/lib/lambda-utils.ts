@@ -10,9 +10,6 @@ import {Logger} from "@sailplane/logger";
 
 const logger = new Logger('lambda-utils');
 
-/** Define the async version of ProxyHandler */
-export type AsyncProxyHandler = (event: APIGatewayEvent, context: Context) => Promise<any>;
-
 /**
  * Casted interface for APIGatewayProxyEvents as converted through the middleware
  */
@@ -32,6 +29,9 @@ export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
      */
     queryStringParameters: { [name: string]: string };
 }
+
+/** Define the async version of ProxyHandler */
+export type AsyncProxyHandler = (event: APIGatewayProxyEvent, context: Context) => Promise<any>;
 
 /**
  * Middleware to handle any otherwise unhandled exception by logging it and generating
