@@ -45,8 +45,8 @@ export class AwsHttps {
      *                      This happens once and then is cached; good for Lambdas.
      *      If `true`, clear cached to obtain fresh credentials from SDK.
      *                 Good for longer running containers that rotate credentials.
-     *      If an object with accessKeyId, secretAccessKey, and sessionToken
-     *                 use these credentials for this instance
+     *      If an object with accessKeyId, secretAccessKey, and sessionToken,
+     *                 use these credentials for this instance.
      */
     constructor(private readonly verbose?: boolean, credentials?: boolean | AwsCredentials) {
         if (credentials) {
