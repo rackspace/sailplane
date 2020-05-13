@@ -4,8 +4,12 @@ import {
     Context,
     ProxyResult
 } from "aws-lambda";
-import * as middy from "middy";
-import {cors, httpEventNormalizer, httpHeaderNormalizer, jsonBodyParser} from "middy/middlewares";
+
+import middy from '@middy/core';
+import cors from '@middy/http-cors';
+import httpEventNormalizer from '@middy/http-event-normalizer';
+import httpHeaderNormalizer from '@middy/http-header-normalizer';
+import httpJsonBodyParser from '@middy/http-json-body-parser';
 import {Logger} from "@sailplane/logger";
 
 const logger = new Logger('lambda-utils');
@@ -40,7 +44,7 @@ export type AsyncProxyHandler = (event: APIGatewayProxyEvent, context: Context) 
  * Fine tuned to work better than the Middy version.
  */
 export const unhandledExceptionMiddleware = () => ({
-    onError: (handler: middy.HandlerLambda<APIGatewayEvent,ProxyResult>, next: middy.NextFunction) => {
+    onError: (handler: middy.HandlerLambda<APIGatewayEvent, ProxyResult>, next: middy.NextFunction) => {
 
         logger.error('Unhandled exception:', handler.error);
 
@@ -62,7 +66,7 @@ export const unhandledExceptionMiddleware = () => ({
  * Must be registered as the last (thus first to run) "after" middleware.
  */
 export const resolvedPromiseIsSuccessMiddleware = () => ({
-    after: (handler: middy.HandlerLambda<APIGatewayEvent,ProxyResult>, next: middy.NextFunction) => {
+    after: (handler: middy.HandlerLambda<APIGatewayEvent, ProxyResult>, next: middy.NextFunction) => {
         // If response isn't a proper API result object, convert it into one.
         let r = handler.response;
         if (!r || typeof r !== 'object' || (!r.statusCode && !r.body)) {
@@ -96,9 +100,9 @@ export const resolvedPromiseIsSuccessMiddleware = () => ({
  * @see https://middy.js.org/docs/middlewares.html
  * @see https://www.npmjs.com/package/http-errors
  */
-export function wrapApiHandler(handler: AsyncProxyHandler): middy.Middy<APIGatewayEvent,ProxyResult> {
+export function wrapApiHandler(handler: AsyncProxyHandler): middy.Middy<AWS_APIGatewayProxyEvent, ProxyResult> {
     return middy(handler)
-        .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(jsonBodyParser())
+        .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(httpJsonBodyParser())
         .use(cors())
         .use(resolvedPromiseIsSuccessMiddleware())
         .use(unhandledExceptionMiddleware());

@@ -12,9 +12,7 @@ describe("LambdaUtils", () => {
 
         test("wrapApiHandler apiSuccess", (endTest) => {
             // GIVEN
-            const expectResult = { hello: 'world' };
-
-            const handler = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent): Promise<APIGatewayProxyResult> => {
+            const handler = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
                 // Echo the event back
                 return LambdaUtils.apiSuccess(event);
             });
@@ -52,10 +50,10 @@ describe("LambdaUtils", () => {
                 expect(resultEvent.body).toEqual(body);
 
                 // Headers are normalized in request event
-                expect(resultEvent.headers['content-length']).toBeUndefined();
-                expect(resultEvent.headers['Content-Length']).toEqual('0');
+                expect(resultEvent.headers['Content-Length']).toBeUndefined();
+                expect(resultEvent.headers['content-length']).toEqual('0');
                 expect(resultEvent.headers["CONTENT-TYPE"]).toBeUndefined();
-                expect(resultEvent.headers['Content-Type']).toEqual("application/json");
+                expect(resultEvent.headers['content-type']).toEqual("application/json");
 
                 // pathParameters and queryStringParameters are expanded to empty objects
                 expect(resultEvent.pathParameters).toEqual({});
@@ -67,9 +65,7 @@ describe("LambdaUtils", () => {
 
         test("wrapApiHandler promise object success", (endTest) => {
             // GIVEN
-            const expectResult = { hello: 'world' };
-
-            const handler = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent): Promise<any> => {
+            const handler = LambdaUtils.wrapApiHandler(async (): Promise<any> => {
                 return {message: 'Hello'};
             });
 
@@ -103,9 +99,7 @@ describe("LambdaUtils", () => {
 
         test("wrapApiHandler promise empty success", (endTest) => {
             // GIVEN
-            const expectResult = { hello: 'world' };
-
-            const handler = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent): Promise<any> => {
+            const handler = LambdaUtils.wrapApiHandler(async (): Promise<any> => {
                 return;
             });
 
@@ -139,7 +133,7 @@ describe("LambdaUtils", () => {
 
         test("wrapApiHandler throw Error", (endTest) => {
             // GIVEN
-            const handler = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent): Promise<APIGatewayProxyResult> => {
+            const handler = LambdaUtils.wrapApiHandler(async (): Promise<APIGatewayProxyResult> => {
                 throw new Error("oops");
             });
 
@@ -157,7 +151,7 @@ describe("LambdaUtils", () => {
 
         test("wrapApiHandler throw http-error", (endTest) => {
             // GIVEN
-            const handler = LambdaUtils.wrapApiHandler(async (event: APIGatewayEvent): Promise<APIGatewayProxyResult> => {
+            const handler = LambdaUtils.wrapApiHandler(async (): Promise<APIGatewayProxyResult> => {
                 throw new createError.NotFound();
             });
 

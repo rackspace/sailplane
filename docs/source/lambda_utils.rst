@@ -34,16 +34,10 @@ Used with API Gateway, the included middlewares:
      instance will not be destroyed and suffer a cold start on the next invocation.
 - Leverages async syntax.
 
-See `Middy middlewares <https://middy.js.org/docs/middlewares.html>`_ for details on those.
+See `Middy middlewares <https://middy.js.org/#available-middlewares>`_ for details on those.
 Not all Middy middlewares are in this implementation, only common ones that are generally useful in all
 APIs. You may extend LambdaUtils's ``wrapApiHandler()`` function in your projects,
 or use it as an example to write your own, to add more middleware!
-
-**WARNING**: Middy has, historically, introduced some `breaking changes <https://github.com/onicagroup/sailplane/issues/16>`_
-in previous minor version bumps. LambdaUtils has been built and tested with Middy
-0.29.0, and should continue to work with future versions, but bumping your
-Middy version beyond 0.29.0 may produce some weird errors.
-
 
 ``LambdaUtils`` depends on two other utilities to work:
 
@@ -53,9 +47,26 @@ Middy version beyond 0.29.0 may produce some weird errors.
 Install
 ^^^^^^^
 
+**To use LambdaUtils v3.x with Middy v1.x.x (latest):**
+
 .. code-block:: shell
 
-    npm install @sailplane/lambda-utils @sailplane/logger middy
+    npm install @sailplane/lambda-utils@3 @sailplane/logger @middy/core @middy/http-cors @middy/http-event-normalizer @middy/http-header-normalizer @middy/http-json-body-parser
+
+The extra @middy/ middleware packages are optional if you write your own wrapper function that does not use them. See below.
+
+**To use LambdaUtils v2.x with Middy v0.x.x:**
+
+.. code-block:: shell
+
+    npm install @sailplane/lambda-utils@2 @sailplane/logger middy
+
+Upgrading
+^^^^^^^^^
+
+To upgrade from lambda-utils v1.x or v2.x to the latest, remove the old with ``npm rm middy``
+and then follow the install instructions above to install the latest. See also the
+`Middy upgrade instructions <https://middy.js.org/UPGRADE.html>`_.
 
 Examples
 ^^^^^^^^
