@@ -12,13 +12,13 @@ export class StateStorageFake extends StateStorage {
         super(namePrefix);
     }
 
-    set(service: string, name: string, value: any, quiet = false): Promise<void> {
+    set(service: string, name: string, value: any, options: any): Promise<void> {
         const key = this.generateName(service, name);
         this.storage[key] = JSON.stringify(value);
         return Promise.resolve();
     }
 
-    get(service: string, name: string, quiet = false): Promise<any> {
+    get(service: string, name: string, options: any): Promise<any> {
         const key = this.generateName(service, name);
 
         const content = this.storage[key];
