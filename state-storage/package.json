@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "tsc && npm link",
-    "test": "jest --no-cache --verbose",
+    "test": "LOG_LEVEL=WARN jest --no-cache --verbose",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"
   },
@@ -42,7 +42,10 @@
     "aws-sdk": "2.x.x"
   },
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
+    "dist/index.js",
+    "dist/index.d.ts",
     "dist/state-storage.js",
     "dist/state-storage.d.ts",
     "dist/state-storage-fake.js",
