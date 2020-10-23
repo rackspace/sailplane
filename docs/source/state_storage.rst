@@ -39,7 +39,6 @@ Your Lambda will need permission to access the Parameter Store. Here's an exampl
 
     provider:
       name: aws
-      runtime: nodejs8.10
 
       environment:
         STATE_STORAGE_PREFIX: /${opt:stage}/myapp
@@ -50,6 +49,18 @@ Your Lambda will need permission to access the Parameter Store. Here's an exampl
             - ssm:GetParameter
             - ssm:PutParameter
           Resource: "arn:aws:ssm:${opt:region}:*:parameter${self:provider.environment.STATE_STORAGE_PREFIX}/*"
+
+        - Effect: Allow
+            Action:
+              - kms:Decrypt
+              - kms:Encrypt
+            Resource: "arn:aws:kms:${opt:region}:*:alias/aws/ssm"
+            Condition:
+              StringEquals:
+                "kms:EncryptionContext:PARAMETER_ARN": "arn:aws:ssm:${opt:region}:*:parameter${self:provider.environment.STATE_STORAGE_PREFIX}/*"
+
+Note that this is the complete set of possible permissions.
+Not all are needed if only reading parameters or if not using the ``secure`` option.
 
 **Simple example storing state**
 

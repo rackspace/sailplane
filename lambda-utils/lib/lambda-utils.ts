@@ -83,7 +83,7 @@ export const resolvedPromiseIsSuccessMiddleware = () => ({
 /**
  * Wrap an API Gateway proxy lambda function handler to add features:
  * - Set CORS headers.
- * - Normalize incoming headers to mixed-case
+ * - Normalize incoming headers to lowercase
  * - If incoming content is JSON text, replace event.body with parsed object.
  * - Ensures that event.queryStringParameters and event.pathParameters are defined,
  *   to avoid TypeErrors.
