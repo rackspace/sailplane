@@ -1,6 +1,7 @@
-import {Logger, LogLevels} from "./logger";
+import { LogLevels } from './logger';
 
 describe('Logger', () => {
+    let Logger;
     let originalConsoleLog;
     let mockLog: jest.Mock;
     let mockDebug: jest.Mock;
@@ -9,6 +10,7 @@ describe('Logger', () => {
     let mockError: jest.Mock;
 
     beforeEach(() => {
+        Logger = require('./logger').Logger;
         originalConsoleLog = global.console.log;
         global.console.log = mockLog = jest.fn();
         global.console.debug = mockDebug = jest.fn();
@@ -20,6 +22,20 @@ describe('Logger', () => {
     afterEach(() => {
         global.console.log = originalConsoleLog;
         mockLog = undefined as any;
+    });
+
+    describe('globalLogLevel', () => {
+        test('set to "NONE" with environment variable', () => {
+            // GIVEN
+            process.env.LOG_LEVEL = 'NONE';
+            jest.resetModules();
+
+            // WHEN
+            Logger = require('./logger').Logger;
+
+            // THEN
+            expect(Logger.globalLogLevel).toBe(1);
+        });
     });
 
     describe('configured for AWS CloudWatch environment', () => {
