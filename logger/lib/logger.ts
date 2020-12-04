@@ -1,6 +1,6 @@
 
 export enum LogLevels {
-    NONE, ERROR, WARN, INFO, DEBUG
+    NONE = 1, ERROR, WARN, INFO, DEBUG
 }
 
 const LogLevelsMap = {
@@ -34,7 +34,7 @@ export class Logger {
      * Global logging level.
      * May be initialized via LOG_LEVEL environment variable, or set by code.
      */
-    static globalLogLevel: LogLevels = LogLevelsMap[process.env.LOG_LEVEL||'DEBUG'] || LogLevels.DEBUG;
+    static globalLogLevel: LogLevels = LogLevelsMap[process.env.LOG_LEVEL || 'DEBUG'] || LogLevels.DEBUG;
 
     /**
      * Include the level in log output?
