@@ -6,7 +6,7 @@
  *
  * @see https://github.com/young-steveo/bottlejs
  */
-import Bottle from 'bottlejs';
+import * as Bottle from 'bottlejs';
 import {Logger} from "@sailplane/logger";
 
 const logger = new Logger('injector');

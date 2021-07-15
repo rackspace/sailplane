@@ -9,7 +9,7 @@ provider:
   name: aws
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-west-2'}
-  runtime: nodejs10.x
+  runtime: nodejs12.x
   versionFunctions: false
 
 functions:
