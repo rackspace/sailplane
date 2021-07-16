@@ -22,8 +22,8 @@ describe('AwsHttps-No-AWS', () => {
         const sut = new AwsHttps(false);
 
         const originalAwsGetCredentials = AWS.config.getCredentials;
-        AWS.config.getCredentials = (callback: (err: AWS.AWSError) => void) => {
-            callback(new Error('Could not load credentials from any providers') as AWS.AWSError);
+        AWS.config.getCredentials = (callback: (err: AWS.AWSError, credentials) => void) => {
+            callback(new Error('Could not load credentials from any providers') as AWS.AWSError, null);
         };
 
         // WHEN
@@ -153,12 +153,11 @@ describe('AwsHttps-No-AWS', () => {
         // GIVEN
         const scope = nock(serverUrl)
             .get('/test')
-            .socketDelay(100)
+            .delay(100)
             .reply(200, {s:"unreachable"});
         const sut = new AwsHttps();
 
         // WHEN
-        let exception: Error|null = null;
         try {
             await sut.request({
                 protocol: 'https:',
@@ -167,14 +166,13 @@ describe('AwsHttps-No-AWS', () => {
                 path: '/test',
                 timeout: 10,
             });
+            fail("expected to throw");
         }
         catch (err) {
-            exception = err;
+            // THEN
+            expect(err).toEqual(new Error('socket hang up'));
+            expect(scope.isDone()).toBeTruthy();
         }
-
-        // THEN
-        expect(exception).toEqual(new Error('socket hang up'));
-        expect(scope.isDone()).toBeTruthy();
     });
 
     test('buildOptions', () => {
