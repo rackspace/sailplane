@@ -2,7 +2,7 @@ import {ExpiringValue} from "./expiring-value";
 import * as MockDate from "mockdate";
 
 
-describe('ExpiringValue', async () => {
+describe('ExpiringValue',() => {
     const baseDate = Date.now();
 
     beforeEach(() => {
