@@ -22,7 +22,7 @@ Install
 
 .. code-block:: shell
 
-    npm install @sailplane/injector @sailplane/logger
+    npm install @sailplane/injector @sailplane/logger bottlejs@1.7
 
 Usage with Examples
 ^^^^^^^^^^^^^^^^^^^
