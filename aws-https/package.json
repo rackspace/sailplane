@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/aws-https",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0",
   "description": "HTTPS client with AWS Signature v4",
   "keywords": [
     "aws",
