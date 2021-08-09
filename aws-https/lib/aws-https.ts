@@ -1,4 +1,5 @@
 import * as AWS from "aws-sdk";
+import {Credentials, CredentialsOptions} from "aws-sdk/lib/credentials";
 import * as aws4 from 'aws4';
 import * as http from "http";
 import * as https from "https";
@@ -20,12 +21,6 @@ export type AwsHttpsOptions = https.RequestOptions & {
     awsSign?: boolean
 };
 
-export type AwsCredentials = AWS.Credentials | {
-    accessKeyId: string
-    secretAccessKey: string
-    sessionToken?: string
-}
-
 /**
  * Light-weight utility for making HTTPS requests in AWS environments.
  */
@@ -34,7 +29,7 @@ export class AwsHttps {
     private static credentialsInitializedPromise: Promise<void>|undefined = undefined;
 
     /** Credentials to use in this instance */
-    private awsCredentials?: AwsCredentials = undefined;
+    private awsCredentials?: Credentials | CredentialsOptions;
 
     /**
      * Constructor.
@@ -48,7 +43,7 @@ export class AwsHttps {
      *      If an object with accessKeyId, secretAccessKey, and sessionToken,
      *                 use these credentials for this instance.
      */
-    constructor(private readonly verbose?: boolean, credentials?: boolean | AwsCredentials) {
+    constructor(private readonly verbose?: boolean, credentials?: boolean | Credentials | CredentialsOptions) {
         if (credentials) {
             AwsHttps.credentialsInitializedPromise = undefined;
             if (typeof credentials === 'object' && credentials.accessKeyId) {
@@ -75,6 +70,7 @@ export class AwsHttps {
         this.verbose === true && logger.debugObject('HTTPS Request: ', requestOptions);
 
         return new Promise<any|null>((resolve, reject) => {
+            let timeoutHandle: any|undefined;
             const request = https.request(requestOptions, (response: http.IncomingMessage) => {
                 this.verbose !== false && logger.info("Status: " + response.statusCode);
 
@@ -85,6 +81,7 @@ export class AwsHttps {
 
                 // End of response - process it
                 response.on('end', () => {
+                    clearTimeout(timeoutHandle!);
                     const content = body.join('');
 
                     if (!response.statusCode || response.statusCode < 200 || response.statusCode > 299) {
@@ -110,13 +107,22 @@ export class AwsHttps {
                         resolve(null);
                     }
                 });
+
+                // Theoretically this should be called based on requestOptions#timeout.
+                // It doesn't, but leaving this code here in case in ever gets fixed by Node.js.
+                /* istanbul ignore next */
+                response.on('timeout', () => {
+                    logger.warn(`Request timeout from ${options.protocol}://${options.hostname}:${options.port}`);
+                    request.abort();
+                });
             });
 
-            // Communication timeout
-            request.setTimeout(options.timeout||120000, () => {
+            // Communication timeout - The HttpRequest setTimeout and requestOptions#timeout
+            // aren't reliable across various Node.js versions, so timing out this way.
+            timeoutHandle = setTimeout(() => {
                 logger.warn(`Request timeout from ${options.protocol}://${options.hostname}:${options.port}`);
                 request.abort();
-            });
+            }, options.timeout||120000);
 
             // Connection error
             request.on('error', (err) => {

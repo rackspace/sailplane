@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/aws-https",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "HTTPS client with AWS Signature v4",
   "keywords": [
     "aws",
@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "tsc && npm link",
-    "test": "jest --runInBand --no-cache --verbose",
+    "test": "LOG_LEVEL=NONE jest --runInBand --no-cache --verbose",
     "test:watch": "jest --watch --runInBand",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"
   },
@@ -23,26 +23,25 @@
   "author": "Onica Group",
   "homepage": "https://docs.onica.com/projects/sailplane",
   "contributors": [
-    "Adam Fanello <afanello@onica.com>"
+    "Adam Fanello <adam.fanello@rackspace.com>"
   ],
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
-    "@types/jest": "23.3.13",
-    "@types/node": "^10.17.18",
-    "aws-sdk": "^2.652.0",
-    "jest": "^23.6.0",
-    "nock": "^10.0.2",
-    "ts-jest": "^23.10.5",
-    "ts-loader": "^2.3.7",
-    "ts-node": "^8.8.1",
-    "typescript": "^2.9.2"
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.16",
+    "aws-sdk": "^2.947.0",
+    "jest": "^26.6.3",
+    "nock": "^10.0.6",
+    "ts-jest": "^26.5.6",
+    "ts-loader": "^9.2.3",
+    "ts-node": "^10.1.0",
+    "typescript": "^3.8.3"
   },
   "peerDependencies": {
-    "@sailplane/logger": "2.x.x",
-    "aws-sdk": "2.x.x"
+    "@sailplane/logger": "2.x.x"
   },
   "dependencies": {
-    "aws4": "^1.9.1"
+    "aws4": "^1.11.0"
   },
   "main": "dist/aws-https.js",
   "files": [
