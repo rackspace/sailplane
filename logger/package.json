@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/logger",
-  "version": "2.0.4",
+  "version": "3.0.0",
   "description": "CloudWatch and serverless-offline friendly logger.",
   "keywords": [
     "aws",
@@ -27,12 +27,12 @@
   ],
   "devDependencies": {
     "@types/jest": "^26.0.24",
-    "@types/node": "^12.20.16",
+    "@types/node": "^12.20.19",
     "jest": "^26.6.3",
     "ts-jest": "^26.5.6",
     "ts-loader": "^9.2.3",
-    "ts-node": "^10.1.0",
-    "typescript": "^2.9.2"
+    "ts-node": "^10.2.0",
+    "typescript": "3.8.x"
   },
   "main": "dist/logger.js",
   "files": [
