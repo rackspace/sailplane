@@ -21,9 +21,13 @@ describe('StateStorage', () => {
             await sut.set('service', 'name', {value: 'hello'});
 
             // THEN
-            expect(mockPut.mock.calls.length).toBe(1);
-            expect(mockPut.mock.calls[0][0].Name).toBe('/prefix/service/name');
-            expect(mockPut.mock.calls[0][0].Value).toBe('{"value":"hello"}');
+            expect(mockPut).toHaveBeenCalledTimes(1);
+            expect(mockPut).toHaveBeenCalledWith({
+                Name: '/prefix/service/name',
+                Value: '{"value":"hello"}',
+                Type: 'String',
+                Overwrite: true,
+            });
         });
 
         test('store something quietly', async () => {
@@ -35,9 +39,13 @@ describe('StateStorage', () => {
             await sut.set('service', 'name', {value: 'hello'}, true);
 
             // THEN
-            expect(mockPut.mock.calls.length).toBe(1);
-            expect(mockPut.mock.calls[0][0].Name).toBe('/prefix/service/name');
-            expect(mockPut.mock.calls[0][0].Value).toBe('{"value":"hello"}');
+            expect(mockPut).toHaveBeenCalledTimes(1);
+            expect(mockPut).toHaveBeenCalledWith({
+                Name: '/prefix/service/name',
+                Value: '{"value":"hello"}',
+                Type: 'String',
+                Overwrite: true,
+            });
         });
 
         test('store something as raw string', async () => {
@@ -49,9 +57,13 @@ describe('StateStorage', () => {
             await sut.set('service', 'name', "Goodbye", {quiet: true, isRaw: true});
 
             // THEN
-            expect(mockPut.mock.calls.length).toBe(1);
-            expect(mockPut.mock.calls[0][0].Name).toBe('/prefix/service/name');
-            expect(mockPut.mock.calls[0][0].Value).toBe('Goodbye');
+            expect(mockPut).toHaveBeenCalledTimes(1);
+            expect(mockPut).toHaveBeenCalledWith({
+                Name: '/prefix/service/name',
+                Value: 'Goodbye',
+                Type: 'String',
+                Overwrite: true,
+            });
         });
 
         // Repeat with quiet flag in order to achieve code coverage
@@ -64,9 +76,13 @@ describe('StateStorage', () => {
             await sut.set('service', 'name', {value: 'hello'}, {secure: true});
 
             // THEN
-            expect(mockPut.mock.calls.length).toBe(1);
-            expect(mockPut.mock.calls[0][0].Name).toBe('/prefix/service/name');
-            expect(mockPut.mock.calls[0][0].Value).toBe('{"value":"hello"}');
+            expect(mockPut).toHaveBeenCalledTimes(1);
+            expect(mockPut).toHaveBeenCalledWith({
+                Name: '/prefix/service/name',
+                Value: '{"value":"hello"}',
+                Type: 'SecureString',
+                Overwrite: true,
+            });
         });
     });
 
@@ -86,8 +102,8 @@ describe('StateStorage', () => {
             const result = await sut.get('service', 'name');
 
             // THEN
-            expect(mockGet.mock.calls.length).toBe(1);
-            expect(mockGet.mock.calls[0][0].Name).toBe('/prefix/service/name');
+            expect(mockGet).toHaveBeenCalledTimes(1);
+            expect(mockGet).toHaveBeenCalledWith({Name: '/prefix/service/name'});
             expect(result.value).toEqual('hello');
         });
 
@@ -100,8 +116,8 @@ describe('StateStorage', () => {
             const result = await sut.get('service', 'name', true);
 
             // THEN
-            expect(mockGet.mock.calls.length).toBe(1);
-            expect(mockGet.mock.calls[0][0].Name).toBe('/prefix/service/name');
+            expect(mockGet).toHaveBeenCalledTimes(1);
+            expect(mockGet).toHaveBeenCalledWith({Name: '/prefix/service/name'});
             expect(result).toBeUndefined();
         });
 
@@ -118,8 +134,8 @@ describe('StateStorage', () => {
             const result = await sut.get('service', 'name', {isRaw: true});
 
             // THEN
-            expect(mockGet.mock.calls.length).toBe(1);
-            expect(mockGet.mock.calls[0][0].Name).toBe('/prefix/service/name');
+            expect(mockGet).toHaveBeenCalledTimes(1);
+            expect(mockGet).toHaveBeenCalledWith({Name: '/prefix/service/name'});
             expect(result).toEqual('{"value":"hello"}');
         });
 
@@ -136,8 +152,8 @@ describe('StateStorage', () => {
             const result = await sut.get('service', 'name', {secure: true});
 
             // THEN
-            expect(mockGet.mock.calls.length).toBe(1);
-            expect(mockGet.mock.calls[0][0].Name).toBe('/prefix/service/name');
+            expect(mockGet).toHaveBeenCalledTimes(1);
+            expect(mockGet).toHaveBeenCalledWith({Name: '/prefix/service/name', WithDecryption: true});
             expect(result.value).toEqual('hello');
         });
     });
