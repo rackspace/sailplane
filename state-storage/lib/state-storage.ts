@@ -1,4 +1,4 @@
-import * as AWS from "aws-sdk";
+import {SSMClient, GetParameterCommand, PutParameterCommand} from "@aws-sdk/client-ssm";
 import {Logger} from "@sailplane/logger";
 
 const logger = new Logger('state-storage');
@@ -23,19 +23,21 @@ interface StateStorageOptions {
  * and environment (dev/prod).
  *
  * Suggested use with Injector:
- *   Injector.register(StateStorage, ()=>new StateStorage(process.env.STATE_STORAGE_PREFIX));
+ *   Injector.register(StateStorage, () => new StateStorage(process.env.STATE_STORAGE_PREFIX));
  */
 export class StateStorage {
-
-    private readonly ssm = new AWS.SSM({apiVersion: '2014-11-06'});
-
     /**
      * Construct
      *
      * @param namePrefix prefix string to start all parameter names with.
      *                   Should at least include the environment (dev/prod).
+     * @param ssm the SSMClient to use
      */
-    constructor(private readonly namePrefix: string) {
+    constructor(
+        private readonly namePrefix: string,
+        /* istanbul ignore next - default never used when unit testing */
+        private readonly ssm = new SSMClient({})
+    ) {
         if (!this.namePrefix.endsWith('/'))
             this.namePrefix = this.namePrefix + '/';
     }
@@ -61,12 +63,13 @@ export class StateStorage {
             logger.info(`Saving state ${key}=${content}`);
         }
 
-        return this.ssm.putParameter({
+        const command = new PutParameterCommand({
             Name: key,
             Type: options.secure ? 'SecureString' : 'String',
             Value: content,
             Overwrite: true
-        }).promise().then(() => undefined);
+        });
+        return this.ssm.send(command).then(() => undefined);
     }
 
     /**
@@ -80,9 +83,13 @@ export class StateStorage {
     get(service: string, name: string, optionsOrQuiet: boolean | StateStorageOptions = {}): Promise<any> {
         const options = optionsOrQuiet === true ? {quiet: true} : optionsOrQuiet as StateStorageOptions;
         const key = this.generateName(service, name);
+        const command = new GetParameterCommand({
+            Name: key,
+            WithDecryption: options.secure
+        });
 
-        return this.ssm.getParameter({ Name: key, WithDecryption: options.secure })
-            .promise().then((result: AWS.SSM.GetParameterResult) => {
+        return this.ssm.send(command)
+            .then(result => {
                 const content = result && result.Parameter ? result.Parameter.Value : undefined;
 
                 if (options.quiet || options.secure) {
