@@ -10,7 +10,7 @@ describe('StateStorage', () => {
     describe('#set', () => {
         beforeEach(() => {
             mockSSMClient.send.mockReset();
-            sut = new StateStorage('/prefix/', mockSSMClient as any as SSMClient);
+            sut = new StateStorage('/prefix/', mockSSMClient as unknown as SSMClient);
         });
 
         test('store something noisily', async () => {
