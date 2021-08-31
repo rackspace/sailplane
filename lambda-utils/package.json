@@ -50,8 +50,9 @@
     "@middy/http-json-body-parser": "2.x.x",
     "@sailplane/logger": "3.x.x"
   },
-  "main": "dist/lambda-utils.js",
+  "main": "dist/index.js",
   "files": [
-    "dist/lambda-utils.d.ts"
+    "dist/*.js",
+    "dist/*.d.ts"
   ]
 }

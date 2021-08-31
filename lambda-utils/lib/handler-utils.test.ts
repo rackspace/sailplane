@@ -5,7 +5,7 @@ import {
     APIGatewayProxyResult, APIGatewayProxyResultV2,
     Context
 } from "aws-lambda";
-import * as LambdaUtils from "./lambda-utils";
+import * as LambdaUtils from "./index";
 import * as createError from "http-errors";
 
 describe("LambdaUtils", () => {
