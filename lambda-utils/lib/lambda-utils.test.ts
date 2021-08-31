@@ -1,7 +1,8 @@
 import {
-    APIGatewayEvent,
     APIGatewayEventRequestContext,
-    APIGatewayProxyResult,
+    APIGatewayProxyEvent,
+    APIGatewayProxyEventV2,
+    APIGatewayProxyResult, APIGatewayProxyResultV2,
     Context
 } from "aws-lambda";
 import * as LambdaUtils from "./lambda-utils";
@@ -10,15 +11,15 @@ import * as createError from "http-errors";
 describe("LambdaUtils", () => {
     describe("wrapApiHandler", () => {
 
-        test("wrapApiHandler apiSuccess", (endTest) => {
+        test("wrapApiHandler apiSuccess", async () => {
             // GIVEN
-            const handler = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+            const handler = LambdaUtils.wrapApiHandler(async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
                 // Echo the event back
                 return LambdaUtils.apiSuccess(event);
             });
 
             const body = { company: "Onica", tagline: "Innovation through Cloud Transformation" };
-            const givenEvent: APIGatewayEvent = {
+            const givenEvent: APIGatewayProxyEvent = {
                 body: JSON.stringify(body),
                 headers: {
                     "content-length": "0",
@@ -33,77 +34,88 @@ describe("LambdaUtils", () => {
                 multiValueQueryStringParameters: null,
                 stageVariables: null,
                 resource: "tada",
-                requestContext: {} as APIGatewayEventRequestContext
+                requestContext: {} as any
             };
 
             // WHEN
-            handler(givenEvent, {} as Context, (err, response: any) => {
-                // THEN
-                expect(err).toBeNull();
+            const response = await handler(givenEvent, {} as Context, {} as any) as APIGatewayProxyResult;
 
-                // CORS header set in response
-                expect(response.headers['Access-Control-Allow-Origin']).toEqual('*');
+            // THEN
 
-                const resultEvent: APIGatewayEvent = JSON.parse(response.body);
+            // CORS header set in response
+            expect(response.headers?.['Access-Control-Allow-Origin']).toEqual('*');
 
-                // body was parsed from string to JSON in request event
-                expect(resultEvent.body).toEqual(body);
+            const resultEvent: APIGatewayProxyEvent = JSON.parse(response.body);
 
-                // Headers are normalized in request event
-                expect(resultEvent.headers['Content-Length']).toBeUndefined();
-                expect(resultEvent.headers['content-length']).toEqual('0');
-                expect(resultEvent.headers["CONTENT-TYPE"]).toBeUndefined();
-                expect(resultEvent.headers['content-type']).toEqual("application/json");
+            // body was parsed from string to JSON in request event
+            expect(resultEvent.body).toEqual(body);
 
-                // pathParameters and queryStringParameters are expanded to empty objects
-                expect(resultEvent.pathParameters).toEqual({});
-                expect(resultEvent.queryStringParameters).toEqual({});
+            // Headers are normalized in request event
+            expect(resultEvent.headers['Content-Length']).toBeUndefined();
+            expect(resultEvent.headers['content-length']).toEqual('0');
+            expect(resultEvent.headers["CONTENT-TYPE"]).toBeUndefined();
+            expect(resultEvent.headers['content-type']).toEqual("application/json");
 
-                endTest();
-            });
+            // pathParameters and queryStringParameters are expanded to empty objects
+            expect(resultEvent.pathParameters).toEqual({});
+            expect(resultEvent.queryStringParameters).toEqual({});
         });
 
-        test("wrapApiHandler promise object success", (endTest) => {
+        test("wrapApiHandler v2 promise object success", async () => {
             // GIVEN
             const handler = LambdaUtils.wrapApiHandler(async (): Promise<any> => {
                 return {message: 'Hello'};
             });
 
-            const givenEvent: APIGatewayEvent = {
-                body: null,
-                headers: {},
-                multiValueHeaders: {},
-                httpMethod: "GET",
+            const givenEvent: APIGatewayProxyEventV2 = {
+                version: "2",
+                routeKey: "123",
+                body: undefined,
+                headers: {
+                    Origin: "test-origin"
+                },
+                rawPath: "/test",
+                rawQueryString: "",
                 isBase64Encoded: false,
-                path: "/test",
-                pathParameters: null,
-                queryStringParameters: null,
-                multiValueQueryStringParameters: null,
-                stageVariables: null,
-                resource: "",
-                requestContext: {} as APIGatewayEventRequestContext
+                pathParameters: undefined,
+                queryStringParameters: undefined,
+                requestContext: {
+                    accountId: "123",
+                    apiId: "abc",
+                    domainName: "test",
+                    domainPrefix: "unit",
+                    http: {
+                        method: "get",
+                        path: "/test",
+                        protocol: "http",
+                        sourceIp: "1.1.1.1",
+                        userAgent: "unit/test"
+                    },
+                    requestId: "abc",
+                    routeKey: "123",
+                    stage: "test",
+                    time: "2021-08-30T16:58:31Z",
+                    timeEpoch: 1000000
+                }
             };
 
             // WHEN
-            handler(givenEvent, {} as Context, (err, response: APIGatewayProxyResult) => {
-                // THEN
-                expect(err).toBeNull();
+            const response = await handler(givenEvent, {} as Context, {} as any) as APIGatewayProxyResultV2<any>;
 
-                expect(response.statusCode).toEqual(200);
-                expect(response.body).toEqual("{\"message\":\"Hello\"}");
-                expect(response.headers!["Access-Control-Allow-Origin"]).toEqual("*");
-
-                endTest();
-            });
+            // THEN
+            expect(response.statusCode).toEqual(200);
+            expect(response.body).toEqual("{\"message\":\"Hello\"}");
+            // With HTTP APIs, API Gateway handles CORS, so it is ignored here.
+            expect(response.headers?.["Access-Control-Allow-Origin"]).toBeUndefined();
         });
 
-        test("wrapApiHandler promise empty success", (endTest) => {
+        test("wrapApiHandler promise empty success", async () => {
             // GIVEN
             const handler = LambdaUtils.wrapApiHandler(async (): Promise<any> => {
                 return;
             });
 
-            const givenEvent: APIGatewayEvent = {
+            const givenEvent: APIGatewayProxyEvent = {
                 body: null,
                 headers: {},
                 multiValueHeaders: {},
@@ -119,53 +131,47 @@ describe("LambdaUtils", () => {
             };
 
             // WHEN
-            handler(givenEvent, {} as Context, (err, response: APIGatewayProxyResult) => {
-                // THEN
-                expect(err).toBeNull();
+            const response = await handler(
+                givenEvent, {} as Context, {} as any
+            ) as APIGatewayProxyResult;
 
-                expect(response.statusCode).toEqual(200);
-                expect(response.body).toBeFalsy();
-                expect(response.headers!["Access-Control-Allow-Origin"]).toEqual("*");
-
-                endTest();
-            });
+            // THEN
+            expect(response.statusCode).toEqual(200);
+            expect(response.body).toBeFalsy();
+            expect(response.headers!["Access-Control-Allow-Origin"]).toEqual("*");
         });
 
-        test("wrapApiHandler throw Error", (endTest) => {
+        test("wrapApiHandler throw Error", async () => {
             // GIVEN
             const handler = LambdaUtils.wrapApiHandler(async (): Promise<APIGatewayProxyResult> => {
                 throw new Error("oops");
             });
 
             // WHEN
-            handler({} as APIGatewayEvent, {} as Context, (err, response: any) => {
+            const response = await handler(
+                {} as unknown as APIGatewayProxyEvent, {} as Context, {} as any
+            ) as APIGatewayProxyResult;
 
-                // THEN
-                expect(err).toBeFalsy();
-                expect(response.statusCode).toEqual(500);
-                expect(response.body).toEqual("Error: oops");
-
-                endTest();
-            });
+            // THEN
+            expect(response.statusCode).toEqual(500);
+            expect(response.body).toEqual("Error: oops");
         });
 
-        test("wrapApiHandler throw http-error", (endTest) => {
+        test("wrapApiHandler throw http-error", async () => {
             // GIVEN
             const handler = LambdaUtils.wrapApiHandler(async (): Promise<APIGatewayProxyResult> => {
                 throw new createError.NotFound();
             });
 
             // WHEN
-            handler({} as APIGatewayEvent, {} as Context, (err, response: any) => {
+            const response = await handler(
+                {} as unknown as APIGatewayProxyEvent, {} as Context, {} as any
+            ) as APIGatewayProxyResult;
 
-                // THEN
-                expect(err).toBeFalsy();
-                expect(response).toEqual({
-                    statusCode: 404,
-                    body: 'NotFoundError: Not Found'
-                });
-
-                endTest();
+            // THEN
+            expect(response).toEqual({
+                statusCode: 404,
+                body: 'NotFoundError: Not Found'
             });
         });
     });

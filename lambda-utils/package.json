@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/lambda-utils",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Use middleware to remove redundancy in AWS Lambda handlers.",
   "keywords": [
     "aws",
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "tsc && npm link",
-    "test": "jest --no-cache",
+    "test": "LOG_LEVEL=NONE jest --no-cache",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"
   },
@@ -24,34 +24,31 @@
   "author": "Onica Group",
   "homepage": "https://docs.onica.com/projects/sailplane",
   "contributors": [
-    "Adam Fanello <afanello@onica.com>"
+    "Adam Fanello <adam.fanellorackspace.com>"
   ],
   "devDependencies": {
-    "@middy/core": "^1.0.0",
-    "@middy/http-cors": "^1.0.0",
-    "@middy/http-event-normalizer": "^1.0.0",
-    "@middy/http-header-normalizer": "^1.0.0",
-    "@middy/http-json-body-parser": "^1.0.0",
+    "@middy/core": "^2.5.1",
+    "@middy/http-cors": "^2.5.1",
+    "@middy/http-event-normalizer": "^2.5.1",
+    "@middy/http-header-normalizer": "^2.5.1",
+    "@middy/http-json-body-parser": "^2.5.1",
     "@sailplane/logger": "file:../logger",
-    "@types/aws-lambda": "^8.10.51",
-    "@types/jest": "23.3.13",
-    "@types/node": "^10.17.21",
-    "aws-sdk": "^2.675.0",
-    "http-errors": "^1.7.3",
-    "jest": "^23.6.0",
-    "ts-jest": "^23.10.5",
-    "ts-loader": "^2.3.7",
-    "ts-node": "^8.8.1",
-    "typescript": "^2.9.2"
+    "@types/aws-lambda": "^8.10.83",
+    "@types/jest": "26.0.24",
+    "@types/node": "^12.20.21",
+    "http-errors": "^1.8.0",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
+    "ts-node": "^10.2.1",
+    "typescript": "3.8.3"
   },
   "peerDependencies": {
-    "@middy/core": "^1.0.0",
-    "@middy/http-cors": "^1.0.0",
-    "@middy/http-event-normalizer": "^1.0.0",
-    "@middy/http-header-normalizer": "^1.0.0",
-    "@middy/http-json-body-parser": "^1.0.0",
-    "@sailplane/logger": "2.x.x",
-    "aws-sdk": "2.x.x"
+    "@middy/core": "2.x.x",
+    "@middy/http-cors": "2.x.x",
+    "@middy/http-event-normalizer": "2.x.x",
+    "@middy/http-header-normalizer": "2.x.x",
+    "@middy/http-json-body-parser": "2.x.x",
+    "@sailplane/logger": "3.x.x"
   },
   "main": "dist/lambda-utils.js",
   "files": [
