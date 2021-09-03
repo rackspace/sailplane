@@ -10,11 +10,11 @@ const logger = new Logger('lambda-utils');
  *
  * Fine tuned to work better than the Middy version, and uses @sailplane/logger.
  */
-export const unhandledExceptionMiddleware = <TEvent extends APIGatewayProxyEventAnyVersion, TResult extends APIGatewayProxyResultAnyVersion>(): middy.MiddlewareObj<TEvent, TResult> => ({
-    onError: async (request): Promise<void> => {
+export const unhandledExceptionMiddleware = (): middy.MiddlewareObj<APIGatewayProxyEventAnyVersion, APIGatewayProxyResultAnyVersion> => ({
+    onError: async (request) => {
         logger.error('Unhandled exception:', request.error);
 
-        request.response = request.response || {} as TResult;
+        request.response = request.response || {};
         /* istanbul ignore else - nominal path is for response to be brand new*/
         if ((request.response.statusCode || 0) < 400) {
             request.response.statusCode = (request.error as any)?.statusCode ?? 500;

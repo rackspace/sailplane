@@ -2,7 +2,7 @@ import {
     APIGatewayEventRequestContext,
     APIGatewayProxyEvent,
     APIGatewayProxyEventV2,
-    APIGatewayProxyResult, APIGatewayProxyResultV2,
+    APIGatewayProxyResult, APIGatewayProxyResultV2, APIGatewayProxyStructuredResultV2,
     Context
 } from "aws-lambda";
 import * as LambdaUtils from "./index";
@@ -63,7 +63,7 @@ describe("LambdaUtils", () => {
 
         test("wrapApiHandler v2 promise object success", async () => {
             // GIVEN
-            const handler = LambdaUtils.wrapApiHandler(async (): Promise<any> => {
+            const handler = LambdaUtils.wrapApiHandlerV2(async (): Promise<any> => {
                 return {message: 'Hello'};
             });
 
@@ -157,15 +157,15 @@ describe("LambdaUtils", () => {
             expect(response.body).toEqual("Error: oops");
         });
 
-        test("wrapApiHandler throw http-error", async () => {
+        test("wrapApiHandlerV2 throw http-error", async () => {
             // GIVEN
-            const handler = LambdaUtils.wrapApiHandler(async (): Promise<APIGatewayProxyResult> => {
+            const handler = LambdaUtils.wrapApiHandlerV2(async (): Promise<APIGatewayProxyStructuredResultV2> => {
                 throw new createError.NotFound();
             });
 
             // WHEN
             const response = await handler(
-                {} as unknown as APIGatewayProxyEvent, {} as Context, {} as any
+                {} as unknown as APIGatewayProxyEventV2, {} as Context, {} as any
             ) as APIGatewayProxyResult;
 
             // THEN

@@ -22,5 +22,6 @@
       "es2017"
     ]
   },
-  "exclude" : ["lib/*.test.ts"]
+  "include": ["lib/*.ts"],
+  "exclude": ["lib/*.test.ts"]
 }

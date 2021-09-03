@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/lambda-utils",
-  "version": "4.0.0",
+  "version": "4.0.0-beta.4",
   "description": "Use middleware to remove redundancy in AWS Lambda handlers.",
   "keywords": [
     "aws",
@@ -48,7 +48,7 @@
     "@middy/http-event-normalizer": "2.x.x",
     "@middy/http-header-normalizer": "2.x.x",
     "@middy/http-json-body-parser": "2.x.x",
-    "@sailplane/logger": "3.x.x"
+    "@sailplane/logger": ">=3.x.x"
   },
   "main": "dist/index.js",
   "files": [

@@ -1,18 +1,21 @@
-import {APIGatewayProxyResult, Callback, Context} from "aws-lambda";
+import {APIGatewayProxyResult} from "aws-lambda";
 import middy from '@middy/core';
 import cors from '@middy/http-cors';
 import httpEventNormalizer from '@middy/http-event-normalizer';
 import httpHeaderNormalizer from '@middy/http-header-normalizer';
 import httpJsonBodyParser from '@middy/http-json-body-parser';
 import {Logger} from "@sailplane/logger";
-import {APIGatewayProxyEventAnyVersion, APIGatewayProxyResultAnyVersion} from "./types";
+import {
+    AsyncMiddyifedHandlerV1, AsyncMiddyifedHandlerV2,
+    AsyncProxyHandlerV1, AsyncProxyHandlerV2
+} from "./types";
 import {resolvedPromiseIsSuccessMiddleware} from "./resolved-promise-is-success";
 import {unhandledExceptionMiddleware} from "./unhandled-exception";
 
 const logger = new Logger('lambda-utils');
 
 /**
- * Wrap an API Gateway proxy lambda function handler to add features:
+ * Wrap an API Gateway V1 format proxy lambda function handler to add features:
  * - Set CORS headers.
  * - Normalize incoming headers to lowercase
  * - If incoming content is JSON text, replace event.body with parsed object.
@@ -31,14 +34,41 @@ const logger = new Logger('lambda-utils');
  * @see https://middy.js.org/#:~:text=available%20middlewares
  * @see https://www.npmjs.com/package/http-errors
  */
-export function wrapApiHandler<TEvent extends APIGatewayProxyEventAnyVersion, TResult extends APIGatewayProxyResultAnyVersion>(
-    handler: (event: TEvent, context: Context, callback?: Callback<TResult>) => Promise<TResult>
-) : middy.MiddyfiedHandler<TEvent, TResult> {
+export function wrapApiHandler(handler: AsyncProxyHandlerV1): AsyncMiddyifedHandlerV1 {
     return middy(handler)
         .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(httpJsonBodyParser())
         .use(cors())
-        .use(resolvedPromiseIsSuccessMiddleware<TEvent, TResult>())
-        .use(unhandledExceptionMiddleware<TEvent, TResult>());
+        .use(resolvedPromiseIsSuccessMiddleware())
+        .use(unhandledExceptionMiddleware());
+}
+export const wrapApiHandlerV1 = wrapApiHandler;
+
+/**
+ * Wrap an API Gateway V2 format proxy lambda function handler to add features:
+ * - Set CORS headers.
+ * - Normalize incoming headers to lowercase
+ * - If incoming content is JSON text, replace event.body with parsed object.
+ * - Ensures that event.queryStringParameters and event.pathParameters are defined,
+ *   to avoid TypeErrors.
+ * - Ensures that handler response is formatted properly as a successful
+ *   API Gateway result.
+ * - Catch http-errors exceptions into proper HTTP responses.
+ * - Catch other exceptions and return as HTTP 500
+ *
+ * This wrapper includes commonly useful middleware. You may further wrap it
+ * with your own function that adds additional middleware, or just use it as
+ * an example.
+ *
+ * @param handler async function to wrap
+ * @see https://middy.js.org/#:~:text=available%20middlewares
+ * @see https://www.npmjs.com/package/http-errors
+ */
+export function wrapApiHandlerV2(handler: AsyncProxyHandlerV2): AsyncMiddyifedHandlerV2 {
+    return middy(handler)
+        .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(httpJsonBodyParser())
+        .use(cors())
+        .use(resolvedPromiseIsSuccessMiddleware())
+        .use(unhandledExceptionMiddleware());
 }
 
 /**
