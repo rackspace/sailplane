@@ -1,5 +1,5 @@
 import {ElasticsearchClient, ElasticsearchResult} from "./elasticsearch-client";
-import {AwsHttps, AwsHttpsOptions} from "@sailplane/aws-https";
+import {AwsHttps} from "@sailplane/aws-https";
 
 describe("ElasticsearchClient",() => {
 
@@ -89,7 +89,7 @@ describe("ElasticsearchClient",() => {
         const result = sut.request('GET', '/thing');
 
         // THEN
-        expect(result).rejects.toEqual({ statusCode: 500 });
+        await expect(result).rejects.toEqual({ statusCode: 500 });
         expect(mockHttp.calls.length).toBe(1);
     });
 });
