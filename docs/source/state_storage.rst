@@ -30,7 +30,7 @@ Install
 
 .. code-block:: shell
 
-    npm install @sailplane/state-storage @sailplane/logger
+    npm install @sailplane/state-storage @sailplane/logger @aws-sdk/client-ssm
 
 Examples
 ^^^^^^^^
