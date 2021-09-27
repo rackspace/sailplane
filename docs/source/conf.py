@@ -184,9 +184,8 @@ def setup(app):
     # so we have an easy to check if we're running in their hosted build
     # environment
     if os.environ.get('RTD_BUILD'):
-        subprocess.check_call(['./make.sh', 'build'])
         # Make npm link work by fixing npm global location
-        # if not os.path.isdir(os.path.expanduser('~/.npm-global')):
+        if not os.path.isdir(os.path.expanduser('~/.npm-global')):
             # os.mkdir(os.path.expanduser('~/.npm-global'))
             # subprocess.check_call(['npm',
             #                        'config',
@@ -198,15 +197,15 @@ def setup(app):
             #                        '-g',
             #                        'npm'])
 
-            # prevdir = os.getcwd()
-            # os.chdir(
-            #     os.path.expanduser(
-            #         os.path.dirname(os.path.dirname(os.path.dirname(
-            #             os.path.abspath(__file__)
-            #         )))
-            #     )
-            # )
-            # try:
+            prevdir = os.getcwd()
+            os.chdir(
+                os.path.expanduser(
+                    os.path.dirname(os.path.dirname(os.path.dirname(
+                        os.path.abspath(__file__)
+                    )))
+                )
+            )
+            try:
                 # Use updated npm
                 # makefileobj = fileinput.input('make.sh', inplace=True)
                 # for line in makefileobj:
@@ -225,6 +224,6 @@ def setup(app):
                 #                   end='')
                 #         pkgfileobj.close()
 
-            #     subprocess.check_call(['./make.sh', 'build'])
-            # finally:
-            #     os.chdir(prevdir)
+                subprocess.check_call(['./make.sh', 'build'])
+            finally:
+                os.chdir(prevdir)
