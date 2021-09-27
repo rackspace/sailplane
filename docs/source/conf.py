@@ -184,46 +184,47 @@ def setup(app):
     # so we have an easy to check if we're running in their hosted build
     # environment
     if os.environ.get('RTD_BUILD'):
+        subprocess.check_call(['./make.sh', 'build'])
         # Make npm link work by fixing npm global location
-        if not os.path.isdir(os.path.expanduser('~/.npm-global')):
-            os.mkdir(os.path.expanduser('~/.npm-global'))
-            subprocess.check_call(['npm',
-                                   'config',
-                                   'set',
-                                   'prefix',
-                                   '~/.npm-global'])
-            subprocess.check_call(['npm',
-                                   'i',
-                                   '-g',
-                                   'npm'])
+        # if not os.path.isdir(os.path.expanduser('~/.npm-global')):
+            # os.mkdir(os.path.expanduser('~/.npm-global'))
+            # subprocess.check_call(['npm',
+            #                        'config',
+            #                        'set',
+            #                        'prefix',
+            #                        '~/.npm-global'])
+            # subprocess.check_call(['npm',
+            #                        'i',
+            #                        '-g',
+            #                        'npm'])
 
-            prevdir = os.getcwd()
-            os.chdir(
-                os.path.expanduser(
-                    os.path.dirname(os.path.dirname(os.path.dirname(
-                        os.path.abspath(__file__)
-                    )))
-                )
-            )
-            try:
+            # prevdir = os.getcwd()
+            # os.chdir(
+            #     os.path.expanduser(
+            #         os.path.dirname(os.path.dirname(os.path.dirname(
+            #             os.path.abspath(__file__)
+            #         )))
+            #     )
+            # )
+            # try:
                 # Use updated npm
-                makefileobj = fileinput.input('make.sh', inplace=True)
-                for line in makefileobj:
-                    print(line.replace(r'npm', '~/.npm-global/bin/npm'),
-                          end='')
-                makefileobj.close()
-                for root, dirnames, filenames in os.walk('.'):
-                    for filename in fnmatch.filter(filenames, 'package.json'):
-                        pkgfileobj = fileinput.input(
-                            os.path.join(root, filename),
-                            inplace=True
-                        )
-                        for line in pkgfileobj:
-                            print(line.replace(r'npm ',
-                                               '~/.npm-global/bin/npm '),
-                                  end='')
-                        pkgfileobj.close()
+                # makefileobj = fileinput.input('make.sh', inplace=True)
+                # for line in makefileobj:
+                #     print(line.replace(r'npm', '~/.npm-global/bin/npm'),
+                #           end='')
+                # makefileobj.close()
+                # for root, dirnames, filenames in os.walk('.'):
+                #     for filename in fnmatch.filter(filenames, 'package.json'):
+                #         pkgfileobj = fileinput.input(
+                #             os.path.join(root, filename),
+                #             inplace=True
+                #         )
+                #         for line in pkgfileobj:
+                #             print(line.replace(r'npm ',
+                #                                '~/.npm-global/bin/npm '),
+                #                   end='')
+                #         pkgfileobj.close()
 
-                subprocess.check_call(['./make.sh', 'build'])
-            finally:
-                os.chdir(prevdir)
+            #     subprocess.check_call(['./make.sh', 'build'])
+            # finally:
+            #     os.chdir(prevdir)
