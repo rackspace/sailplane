@@ -174,5 +174,8 @@ Extending LambdaUtils for your own app
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../lambda-utils/dist/handler-utils.d.ts
+.. literalinclude:: ../types/handler-utils.d.ts
+   :language: typescript
+
+.. literalinclude:: ../types/types.d.ts
    :language: typescript

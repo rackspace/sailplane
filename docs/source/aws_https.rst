@@ -128,5 +128,5 @@ Unit testing your services
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../aws-https/dist/aws-https.d.ts
+.. literalinclude:: ../types/aws-https.d.ts
    :language: typescript

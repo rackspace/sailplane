@@ -9,7 +9,7 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link",
+    "build": "tsc && npm link && cp dist/expiring-value.d.ts ../docs/types/",
     "test": "jest",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"

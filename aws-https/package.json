@@ -10,7 +10,7 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link",
+    "build": "tsc && npm link && cp dist/aws-https.d.ts ../docs/types/",
     "test": "LOG_LEVEL=NONE jest --runInBand --no-cache --verbose",
     "test:watch": "jest --watch --runInBand",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"

@@ -25,7 +25,7 @@ import subprocess
 # -- Project information -----------------------------------------------------
 
 project = u'sailplane'
-copyright = u'2019, Onica Group'
+copyright = u'2021, Onica Group'
 author = u'Onica Group'
 
 # The short X.Y version
@@ -183,9 +183,9 @@ def setup(app):
     # RTD_BUILD environment variable is set in the ReadTheDocs admin console
     # so we have an easy to check if we're running in their hosted build
     # environment
-    if os.environ.get('RTD_BUILD'):
-        # Make npm link work by fixing npm global location
-        if not os.path.isdir(os.path.expanduser('~/.npm-global')):
+    # if os.environ.get('RTD_BUILD'):
+    #     # Make npm link work by fixing npm global location
+    #     if not os.path.isdir(os.path.expanduser('~/.npm-global')):
             # os.mkdir(os.path.expanduser('~/.npm-global'))
             # subprocess.check_call(['npm',
             #                        'config',
@@ -197,15 +197,15 @@ def setup(app):
             #                        '-g',
             #                        'npm'])
 
-            prevdir = os.getcwd()
-            os.chdir(
-                os.path.expanduser(
-                    os.path.dirname(os.path.dirname(os.path.dirname(
-                        os.path.abspath(__file__)
-                    )))
-                )
-            )
-            try:
+            # prevdir = os.getcwd()
+            # os.chdir(
+            #     os.path.expanduser(
+            #         os.path.dirname(os.path.dirname(os.path.dirname(
+            #             os.path.abspath(__file__)
+            #         )))
+            #     )
+            # )
+            # try:
                 # Use updated npm
                 # makefileobj = fileinput.input('make.sh', inplace=True)
                 # for line in makefileobj:
@@ -224,6 +224,6 @@ def setup(app):
                 #                   end='')
                 #         pkgfileobj.close()
 
-                subprocess.check_call(['./make.sh', 'build'])
-            finally:
-                os.chdir(prevdir)
+            #     subprocess.check_call(['./make.sh', 'build'])
+            # finally:
+            #     os.chdir(prevdir)

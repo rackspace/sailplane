@@ -8,7 +8,7 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link",
+    "build": "tsc && npm link && cp dist/elasticsearch-client.d.ts ../docs/types/",
     "test": "jest --no-cache --verbose",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"

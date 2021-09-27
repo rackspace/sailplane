@@ -11,7 +11,7 @@
     "middy"
   ],
   "scripts": {
-    "build": "tsc && npm link",
+    "build": "tsc && npm link && cp dist/handler-utils.d.ts dist/types.d.ts ../docs/types/",
     "test": "LOG_LEVEL=NONE jest --no-cache",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"

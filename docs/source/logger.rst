@@ -117,5 +117,5 @@ Override from environment variable: ``export LOG_FORMAT_OBJECTS=true``
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../logger/dist/logger.d.ts
+.. literalinclude:: ../types/logger.d.ts
    :language: typescript

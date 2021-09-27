@@ -57,5 +57,5 @@ See :doc:`examples` for another example.
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../expiring-value/dist/expiring-value.d.ts
+.. literalinclude:: ../types/expiring-value.d.ts
    :language: typescript

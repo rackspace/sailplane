@@ -44,5 +44,5 @@ See :doc:`examples` for a comprehensive example.
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../elasticsearch-client/dist/elasticsearch-client.d.ts
+.. literalinclude:: ../types/elasticsearch-client.d.ts
    :language: typescript

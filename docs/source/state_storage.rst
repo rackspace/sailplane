@@ -89,8 +89,8 @@ store data in instance memory, instead of the AWS Parameter Store.
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../state-storage/dist/state-storage.d.ts
+.. literalinclude:: ../types/state-storage.d.ts
    :language: typescript
 
-.. literalinclude:: ../../state-storage/dist/state-storage-fake.d.ts
+.. literalinclude:: ../types/state-storage-fake.d.ts
    :language: typescript

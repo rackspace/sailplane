@@ -11,7 +11,7 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link",
+    "build": "tsc && npm link && cp dist/state-storage.d.ts dist/state-storage-fake.d.ts ../docs/types/",
     "test": "LOG_LEVEL=WARN jest --no-cache --verbose",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"

@@ -243,5 +243,5 @@ that unit test mocks be registered with the Injector rather than passed into the
 Type Declarations
 ^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../injector/dist/injector.d.ts
+.. literalinclude:: ../types/injector.d.ts
    :language: typescript
