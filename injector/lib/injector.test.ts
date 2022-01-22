@@ -1,4 +1,4 @@
-import {Injector} from "./injector";
+import { Injectable, Injector } from "./injector";
 
 describe("Injector", () => {
 
@@ -14,6 +14,7 @@ describe("Injector", () => {
         test("register/get with no dependencies", () => {
             // GIVEN
             expect(NoDependencyClass.numInstances).toBe(0);
+            expect(Injector.isRegistered(NoDependencyClass)).toBeFalsy();
 
             // WHEN
             const registered = Injector.register(NoDependencyClass);
@@ -29,6 +30,7 @@ describe("Injector", () => {
             // GIVEN
             expect(NoDependencyClass.numInstances).toBe(1);
             expect(OneDependencyClass.numInstances).toBe(0);
+            expect(Injector.isRegistered(OneDependencyClass)).toBeFalsy();
 
             Injector.register(OneDependencyClass, [NoDependencyClass]);
 
@@ -47,6 +49,7 @@ describe("Injector", () => {
             expect(NoDependencyClass.numInstances).toBe(1);
             expect(OneDependencyClass.numInstances).toBe(1);
             expect(TwoDependencyClass.numInstances).toBe(0);
+            expect(Injector.isRegistered(TwoDependencyClass)).toBeFalsy();
 
             Injector.register(TwoDependencyClass);
 
@@ -118,6 +121,109 @@ describe("Injector", () => {
         });
     });
 
+    describe("Injectable decorator", () => {
+        test("register with automatic dependency detection", () => {
+            // GIVEN
+            expect(Injector.isRegistered(NoDependencyClass)).toBeTruthy();
+            expect(Injector.isRegistered(OneDependencyClass)).toBeTruthy();
+            expect(Injector.isRegistered("DecoratedClass")).toBeFalsy();
+
+            // WHEN
+            @Injectable()
+            class DecoratedClass {
+                static numInstances = 0;
+
+                constructor(public noDep: NoDependencyClass, public oneDep: OneDependencyClass) {
+                    DecoratedClass.numInstances++;
+                }
+                get instanceCount() { return DecoratedClass.numInstances };
+            }
+
+            // THEN decorated class has registered but not yet instantiated
+            expect(DecoratedClass.numInstances).toBe(0);
+            expect(Injector.isRegistered(DecoratedClass)).toBeTruthy();
+            expect(Injector.isRegistered("DecoratedClass")).toBeTruthy();
+
+            // WHEN
+            const instance = Injector.getByName("DecoratedClass")! as any;
+
+            // THEN we can examine the instance, even though don't have access to class def anymore
+            expect(instance).toBeDefined();
+            expect(instance.constructor.name).toEqual("DecoratedClass");
+            expect(instance.instanceCount).toBe(1);
+        });
+
+        test("register as parent and no constructor", () => {
+            // GIVEN
+            abstract class HexagonalPort2 {
+                abstract getThing();
+            }
+            expect(Injector.isRegistered(HexagonalPort2)).toBeFalsy();
+
+            @Injectable({as: HexagonalPort2 })
+            class HexagonalAdaptor2 extends HexagonalPort2 {
+                getThing() { return "thing"; }
+            }
+            expect(Injector.isRegistered(HexagonalPort2)).toBeTruthy();
+
+            // WHEN
+            const instance = Injector.get(HexagonalPort2)!;
+
+            // THEN
+            expect(instance).toBeInstanceOf(HexagonalPort2);
+            expect(instance.getThing()).toEqual("thing");
+        });
+
+        test("register with factory as parent", () => {
+            // GIVEN
+            abstract class HexagonalPort {
+                abstract getThing();
+            }
+            expect(Injector.isRegistered(HexagonalPort)).toBeFalsy();
+
+            @Injectable({factory: () => new HexagonalAdaptor(), as: HexagonalPort })
+            class HexagonalAdaptor extends HexagonalPort {
+                constructor() {
+                    super();
+                }
+                getThing() { return "thing"; }
+            }
+            expect(Injector.isRegistered(HexagonalPort)).toBeTruthy();
+
+            // WHEN
+            const instance = Injector.get(HexagonalPort)!;
+
+            // THEN
+            expect(instance).toBeInstanceOf(HexagonalPort);
+            expect(instance.getThing()).toEqual("thing");
+        });
+
+        test("register as NOT parent fails", () => {
+            // WHEN
+            try {
+                @Injectable({ as: String })
+                class NotChildOfString extends NoDependencyClass {
+                }
+
+                fail("Expected to throw")
+            }
+            catch (_) {
+            }
+        });
+
+        test("fail to register both factory and dependencies", () => {
+            // WHEN
+            try {
+                @Injectable({ factory: () => new NoCanDo(), dependencies: [] })
+                class NoCanDo {}
+
+                fail("Expected to throw")
+            }
+            catch (_) {
+            }
+        });
+
+    });
 
     describe("registerFactory() & getByName()", () => {
         test("registerFactory/getByName with factory", () => {
