@@ -26,71 +26,8 @@ function toNamedDependencies(list: DependencyList): string[] {
     }
 }
 
-export interface InjectableOptions<T> {
-    as?: GettableClass<unknown>;
-    factory?: () => T;
-    dependencies?: DependencyList;
-}
-
-/**
- * Typescript Decorator for registering classes for injection.
- *
- * Must enable options in tsconfig.json:
- * {
- *   "compilerOptions": {
- *     "experimentalDecorators": true,
- *     "emitDecoratorMetadata": true
- *   }
- * }
- *
- * Usage:
- *
- * Like Injector.register(MyServiceClass, [Dependency1, Dependency2]
- *   @Injectable()
- *   class MyServiceClass {
- *       constructor(one: Dependency1, two: Dependency2) {}
- *   }
- *
- * Like Injector.register(MyServiceClass, [Dependency1, "registered-constant"]
- *   @Injectable({dependencies=[Dependency1, "registered-constant"]})
- *   class MyServiceClass {
- *       constructor(one: Dependency1, two: string) {}
- *   }
- *
- * Like Injector.register(MyServiceClass, () = new MyServiceClass())
- *   @Injectable({factory: () = new MyServiceClass()})
- *   class MyServiceClass {
- *   }
- */
-export function Injectable<T>(options?: InjectableOptions<T>) {
-    return function (target: InjectableClass<unknown>) {
-        if (options?.as) {
-            // Validate that 'as' is a parent class
-            let found = false;
-            for (let clazz = target; clazz ; clazz = Object.getPrototypeOf(clazz)) {
-                if (clazz?.name === options.as.name) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                throw new TypeError(`${options.as.name} is not a parent of ${target.name} in @Injectable()`);
-            }
-        }
-
-        if (options?.factory && options.dependencies) {
-            throw new TypeError(`Cannot specify both factory and dependencies on @Injectable() for ${target.name}`);
-        }
-        else if (options?.factory || options?.dependencies) {
-            Injector.register(target, options.factory ?? options.dependencies, options?.as?.name);
-        }
-        else {
-            const metadata = Reflect.getMetadata("design:paramtypes", target) as InjectableClass<unknown>[]|undefined;
-            const dependencies = metadata?.map(clazz => clazz.name);
-            Injector.register(target, dependencies, options?.as?.name);
-        }
-    };
-}
+// verifies that automatically injected dependencies are not undefined
+(Bottle.config as any).strict = true;
 
 /**
  * Wraps up type-safe version of BottleJs for common uses.
@@ -102,11 +39,9 @@ export class Injector {
 
     /**
      * This may be called at beginning of process.
-     * Not required at this point, but may help catch some mistakes.
+     * @deprecated
      */
     static initialize() {
-        // verifies that automatically injected dependencies are not undefined
-        (Bottle.config as any).strict = true;
     }
 
     /**
@@ -126,7 +61,7 @@ export class Injector {
      * -   constructor(other, constValue) {};
      * - }
      * - Injector.register(MyServiceClass);
-
+     *
      * Example service that lazy instantiates with a factory function:
      * - Injector.register(MyServiceClass,
      * -                   () => new MyServiceClass(Injector.get(OtherClass)!, MyArg));
@@ -248,4 +183,94 @@ export class Injector {
         const name = typeof clazzOrName === "string" ? clazzOrName : clazzOrName.name;
         return name in Injector.bottle.container;
     }
+}
+
+/** Options for Injectable decorator */
+export interface InjectableOptions<T> {
+    /**
+     * Register "as" this parent class or name.
+     * A class *must* be a parent class.
+     * The name string works for interfaces, but lacks type safety.
+     */
+    as?: GettableClass<unknown> | string;
+    /** Don't auto-detect constructor dependencies - use this factory function instead */
+    factory?: () => T;
+    /** Don't auto-detect constructor dependencies - use these instead */
+    dependencies?: DependencyList;
+}
+
+/**
+ * Typescript Decorator for registering classes for injection.
+ *
+ * Must enable options in tsconfig.json:
+ * {
+ *   "compilerOptions": {
+ *     "experimentalDecorators": true,
+ *     "emitDecoratorMetadata": true
+ *   }
+ * }
+ *
+ * Usage:
+ *
+ * Like Injector.register(MyServiceClass, [Dependency1, Dependency2]
+ *   @Injectable()
+ *   class MyServiceClass {
+ *       constructor(one: Dependency1, two: Dependency2) {}
+ *   }
+ *
+ * Like Injector.register(MyServiceClass, [Dependency1, "registered-constant"]
+ *   @Injectable({dependencies=[Dependency1, "registered-constant"]})
+ *   class MyServiceClass {
+ *       constructor(one: Dependency1, two: string) {}
+ *   }
+ *
+ * Like Injector.register(MyServiceClass, () = new MyServiceClass())
+ *   @Injectable({factory: () = new MyServiceClass()})
+ *   class MyServiceClass {
+ *   }
+ *
+ * Like Injector.register(HexagonalPort, () => new HexagonalAdaptor())
+ *   abstract class HexagonalPort {
+ *     abstract getThing(): string;
+ *   }
+ *   @Injectable({as: HexagonalPort })
+ *   class HexagonalAdaptor extends HexagonalPort {
+ *     getThing() { return "thing"; }
+ *   }
+ */
+export function Injectable<T>(options?: InjectableOptions<T>) {
+    return function (target: InjectableClass<unknown>) {
+        let asName: string|undefined = undefined;
+        if (typeof options?.as === "function") {
+            // Validate that 'as' is a parent class
+            let found = false;
+            for (let clazz = target; clazz ; clazz = Object.getPrototypeOf(clazz)) {
+                if (clazz?.name === options.as.name) {
+                    found = true;
+                    asName = options.as.name;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new TypeError(`${options.as.name} is not a parent class of ${target.name} in @Injectable()`);
+            }
+        }
+        else if (typeof options?.as === "string") {
+            asName = options.as;
+        }
+
+        if (options?.factory && options.dependencies) {
+            throw new TypeError(`Cannot specify both factory and dependencies on @Injectable() for ${target.name}`);
+        }
+        else if (options?.factory || options?.dependencies) {
+            Injector.register(target, options.factory ?? options.dependencies, asName);
+        }
+        else {
+            const metadata = Reflect.getMetadata(
+                "design:paramtypes", target
+            ) as InjectableClass<unknown>[]|undefined;
+            const dependencies = metadata?.map(clazz => clazz.name);
+            Injector.register(target, dependencies, asName);
+        }
+    };
 }

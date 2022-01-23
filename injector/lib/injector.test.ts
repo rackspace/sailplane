@@ -1,13 +1,22 @@
 import { Injectable, Injector } from "./injector";
 
+/**
+ * Helper for calls that are expected to throw.
+ * Not using jest.expect#toThrow because it insists on logging errors and stack traces.
+ * @param fn function to call
+ * @returns the thrown error
+ * @throws error if fn doesn't throw
+  */
+export function expectThrow(fn: () => any): unknown {
+    try {
+        fn();
+    } catch (err) {
+        return err;
+    }
+    throw new Error("expected to have thrown");
+}
+
 describe("Injector", () => {
-
-    test("Initialize", () => {
-        // WHEN
-        Injector.initialize();
-
-        // THEN Nothing to check... doesn't explode.
-    });
 
     describe("register() & get()", () => {
 
@@ -17,11 +26,10 @@ describe("Injector", () => {
             expect(Injector.isRegistered(NoDependencyClass)).toBeFalsy();
 
             // WHEN
-            const registered = Injector.register(NoDependencyClass);
+            Injector.register(NoDependencyClass);
             const instance = Injector.get(NoDependencyClass)!;
 
             // THEN
-            expect(registered).toBeTruthy();
             expect(instance).toBeInstanceOf(NoDependencyClass);
             expect(NoDependencyClass.numInstances).toBe(1);
         });
@@ -84,40 +92,39 @@ describe("Injector", () => {
             expect(instanceA).toBe(instanceB);
         });
 
-        test("register() duplicate", () => {
+        test("register() duplicate ignored", () => {
             // GIVEN
             expect(NoDependencyClass.numInstances).toBe(1);
 
             // WHEN
-            const registered = Injector.register(NoDependencyClass);
+            Injector.register(NoDependencyClass);
 
             // THEN
-            expect(registered).toBeFalsy();
             expect(NoDependencyClass.numInstances).toBe(1);
         });
 
         test("register(undefined)", () => {
             // WHEN
-            const registered = Injector.register(undefined!);
+            const err = expectThrow(() => Injector.register(undefined!));
 
             // THEN
-            expect(registered).toBeFalsy();
+            expect(err).toBeInstanceOf(TypeError);
         });
 
         test("register(not a class)", () => {
             // WHEN
-            const registered = Injector.register((() => {}) as any);
+            const err = expectThrow(() => Injector.register((() => {}) as any));
 
             // THEN
-            expect(registered).toBeFalsy();
+            expect(err).toBeInstanceOf(TypeError);
         });
 
         test("register(bad dependencies)", () => {
             // WHEN
-            const registered = Injector.register(Date, true as any);
+            const err = expectThrow(() => Injector.register(Date, true as any));
 
             // THEN
-            expect(registered).toBeFalsy();
+            expect(err).toBeInstanceOf(TypeError);
         });
     });
 
@@ -156,7 +163,7 @@ describe("Injector", () => {
         test("register as parent and no constructor", () => {
             // GIVEN
             abstract class HexagonalPort2 {
-                abstract getThing();
+                abstract getThing(): string;
             }
             expect(Injector.isRegistered(HexagonalPort2)).toBeFalsy();
 
@@ -170,14 +177,36 @@ describe("Injector", () => {
             const instance = Injector.get(HexagonalPort2)!;
 
             // THEN
-            expect(instance).toBeInstanceOf(HexagonalPort2);
+            expect(instance).toBeInstanceOf(HexagonalAdaptor2);
+            expect(instance.getThing()).toEqual("thing");
+        });
+
+        test("register as name", () => {
+            // GIVEN
+            interface HexagonalPort3 {
+                getThing(): string;
+            }
+            expect(Injector.isRegistered("HexagonalPort3")).toBeFalsy();
+
+            @Injectable({as: "HexagonalPort3" })
+            class HexagonalAdaptor3 implements HexagonalPort3 {
+                constructor() {}
+                getThing() { return "thing"; }
+            }
+            expect(Injector.isRegistered("HexagonalPort3")).toBeTruthy();
+
+            // WHEN
+            const instance = Injector.getByName<HexagonalPort3>("HexagonalPort3")!;
+
+            // THEN
+            expect(instance).toBeInstanceOf(HexagonalAdaptor3);
             expect(instance.getThing()).toEqual("thing");
         });
 
         test("register with factory as parent", () => {
             // GIVEN
             abstract class HexagonalPort {
-                abstract getThing();
+                abstract getThing(): string;
             }
             expect(Injector.isRegistered(HexagonalPort)).toBeFalsy();
 
@@ -194,7 +223,7 @@ describe("Injector", () => {
             const instance = Injector.get(HexagonalPort)!;
 
             // THEN
-            expect(instance).toBeInstanceOf(HexagonalPort);
+            expect(instance).toBeInstanceOf(HexagonalAdaptor);
             expect(instance.getThing()).toEqual("thing");
         });
 
@@ -249,31 +278,34 @@ describe("Injector", () => {
 
 
             // WHEN
-            const registered = Injector.registerFactory(name, () => someObject);
+            Injector.registerFactory(name, () => someObject);
             const instance = Injector.getByName<{api:number}>(name)!;
 
             // THEN
-            expect(registered).toBeFalsy();
             expect(instance).toBeTruthy();
             expect(instance.api).toEqual(2); // previously registered value
         });
 
         test("registerFactory with blank name", () => {
             // WHEN
-            const registered = Injector.registerFactory('', () => "nope");
+            const err = expectThrow(
+                () => Injector.registerFactory('', () => "nope")
+            );
 
             // THEN
-            expect(registered).toBeFalsy();
-            expect(Injector.getByName('')).toBeUndefined();
+            expect(err).toBeInstanceOf(TypeError);
+            expect(Injector.isRegistered('')).toBeFalsy();
         });
 
         test("registerFactory with undefined name", () => {
             // WHEN
-            const registered = Injector.registerFactory(undefined!, () => "nope");
+            const err = expectThrow(
+                () => Injector.registerFactory(undefined!, () => "nope")
+            );
 
             // THEN
-            expect(registered).toBeFalsy();
-            expect(Injector.getByName('')).toBeUndefined();
+            expect(err).toBeInstanceOf(TypeError);
+            expect(Injector.getByName(undefined!)).toBeUndefined();
         });
     });
 
@@ -316,31 +348,34 @@ describe("Injector", () => {
             const someObject = "hello";
 
             // WHEN
-            const registered = Injector.registerConstant(name, someObject);
+            Injector.registerConstant(name, someObject);
             const instance = Injector.getByName<{api:number}>(name)!;
 
             // THEN
-            expect(registered).toBeFalsy();
             expect(instance).toBeTruthy();
             expect(instance.api).toEqual(2); // previously registered value
         });
 
         test("registerConstant with blank name", () => {
             // WHEN
-            const registered = Injector.registerConstant('', "nope");
+            const err = expectThrow(
+                () => Injector.registerConstant('', "nope")
+            );
 
             // THEN
-            expect(registered).toBeFalsy();
-            expect(Injector.getByName('')).toBeUndefined();
+            expect(err).toBeInstanceOf(TypeError);
+            expect(Injector.isRegistered('')).toBeFalsy();
         });
 
-        test("registerConstant with undefined name", () => {
+        test("registerConstant with null name", () => {
             // WHEN
-            const registered = Injector.registerConstant(undefined!, "nope");
+            const err = expectThrow(
+                () => Injector.registerConstant(null!, "nope")
+            );
 
             // THEN
-            expect(registered).toBeFalsy();
-            expect(Injector.getByName('')).toBeUndefined();
+            expect(err).toBeInstanceOf(TypeError);
+            expect(Injector.getByName(null!)).toBeUndefined();
         });
     });
 });

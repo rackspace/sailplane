@@ -1,6 +1,7 @@
 import {CompanyRepository} from "./company-repository";
-import {Injector} from "@sailplane/injector";
+import { Injectable, Injector } from "@sailplane/injector";
 
+@Injectable()
 export class CompanyService {
 
     constructor(private readonly companyRepo: CompanyRepository) {
@@ -10,5 +11,3 @@ export class CompanyService {
         return this.companyRepo.fetchAllCompanies();
     }
 }
-
-Injector.register(CompanyService, [CompanyRepository]);

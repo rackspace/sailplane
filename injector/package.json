@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/injector",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Simple, light-weight, lazy-instantiating, and type-safe dependency injection in Typescript.",
   "keywords": [
     "di",
