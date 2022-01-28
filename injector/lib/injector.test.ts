@@ -7,7 +7,7 @@ import { Injectable, Injector } from "./injector";
  * @returns the thrown error
  * @throws error if fn doesn't throw
   */
-export function expectThrow(fn: () => any): unknown {
+function expectThrow(fn: () => any): unknown {
     try {
         fn();
     } catch (err) {

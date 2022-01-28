@@ -77,7 +77,7 @@ export class Injector {
         asName: string = clazz.name
     ): void {
         if (!clazz || !asName) {
-            throw new TypeError("Class to register is undefined: " + clazz + " " + asName);
+            throw new TypeError("Class to register is undefined: " + clazz.toString() + " " + asName);
         }
         else if (Injector.bottle.container[asName] == undefined) {
             if (!factoryOrDependencies) {
@@ -244,7 +244,7 @@ export function Injectable<T>(options?: InjectableOptions<T>) {
         if (typeof options?.as === "function") {
             // Validate that 'as' is a parent class
             let found = false;
-            for (let clazz = target; clazz ; clazz = Object.getPrototypeOf(clazz)) {
+            for (let clazz = target; clazz ; clazz = Object.getPrototypeOf(clazz) as InjectableClass<unknown>) {
                 if (clazz?.name === options.as.name) {
                     found = true;
                     asName = options.as.name;
