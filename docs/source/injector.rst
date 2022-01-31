@@ -26,8 +26,8 @@ Install
 
     npm install @sailplane/injector @sailplane/logger bottlejs@1.7
 
-Configuraton
-^^^^^^^^^^^^
+Configuration
+^^^^^^^^^^^^^
 
 To use the Typescript decorator, these options must be enabled in ``tsconfig.json``:
 
@@ -39,6 +39,9 @@ To use the Typescript decorator, these options must be enabled in ``tsconfig.jso
         "emitDecoratorMetadata": true
       }
     }
+
+If using `esbuild <https://esbuild.github.io/>`_, a plugin such as
+`esbuild-decorators <https://github.com/anatine/esbuildnx/tree/main/packages/esbuild-decorators>`_ is necessary.
 
 Usage with Examples
 ^^^^^^^^^^^^^^^^^^^
