@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/injector",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Simple, light-weight, lazy-instantiating, and type-safe dependency injection in Typescript.",
   "keywords": [
     "di",
@@ -23,6 +23,9 @@
   "contributors": [
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],
+  "dependencies": {
+    "reflect-metadata": "~0.1.13"
+  },
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
     "@types/jest": "^26.0.24",

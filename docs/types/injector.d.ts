@@ -6,10 +6,18 @@
  *
  * @see https://github.com/young-steveo/bottlejs
  */
+import "reflect-metadata";
 import * as Bottle from 'bottlejs';
-declare type DependencyList = ({
-    new (...args: any[]): any;
-} | string)[];
+declare type InjectableClass<T> = {
+    new (...args: any[]): T;
+    $inject?: DependencyList;
+    name: string;
+};
+declare type GettableClass<T> = Function & {
+    prototype: T;
+    name: string;
+};
+declare type DependencyList = (InjectableClass<unknown> | string)[];
 /**
  * Wraps up type-safe version of BottleJs for common uses.
  *
@@ -19,7 +27,7 @@ export declare class Injector {
     static readonly bottle: Bottle<string>;
     /**
      * This may be called at beginning of process.
-     * Not required at this point, but may help catch some mistakes.
+     * @deprecated
      */
     static initialize(): void;
     /**
@@ -39,20 +47,17 @@ export declare class Injector {
      * -   constructor(other, constValue) {};
      * - }
      * - Injector.register(MyServiceClass);
-
+     *
      * Example service that lazy instantiates with a factory function:
      * - Injector.register(MyServiceClass,
      * -                   () => new MyServiceClass(Injector.get(OtherClass)!, MyArg));
      *
      * @param clazz the class to register. Ex: MyClass. NOT an instance, the class.
      * @param factoryOrDependencies see above examples. Optional.
-     * @return true if registered, false if not (duplicate or bad)
+     * @param asName by default is clazz.name, but may specify another name to register as
+     * @throws TypeError if duplicate or bad request
      */
-    static register<T>(clazz: {
-        new (...args: any[]): T;
-        $inject?: DependencyList;
-        name: string;
-    }, factoryOrDependencies?: (() => T) | DependencyList): boolean;
+    static register<T>(clazz: InjectableClass<T>, factoryOrDependencies?: (() => T) | DependencyList, asName?: string): void;
     /**
      * Register a factory by name.
      *
@@ -62,15 +67,16 @@ export declare class Injector {
      * @see #getByName(name)
      * @param name name to give the inject.
      * @param factory function that returns a class.
-     * @return true if registered, false if not (duplicate or bad)
+     * @throws TypeError if duplicate or bad request
      */
-    static registerFactory<T>(name: string, factory: (() => T)): boolean;
+    static registerFactory<T>(name: string, factory: (() => T)): void;
     /**
      * Register a named constant value.
      *
      * @see #getByName(name)
      * @param name name to give this constant.
      * @param value value to return when the name is requested.
+     * @throws TypeError if duplicate or bad request
      */
     static registerConstant<T>(name: string, value: T): void;
     /**
@@ -80,9 +86,7 @@ export declare class Injector {
      * @param clazz the class to fetch. Ex: MyClass. NOT an instance, the class.
      * @return the singleton instance of the requested class, undefined if not registered.
      */
-    static get<T>(clazz: {
-        new (...args: any[]): T;
-    }): T | undefined;
+    static get<T>(clazz: GettableClass<T>): T | undefined;
     /**
      * Get a registered constant or class by name.
      *
@@ -93,5 +97,65 @@ export declare class Injector {
      *         undefined if not registered.
      */
     static getByName<T>(name: string): T | undefined;
+    /**
+     * Is a class, factory, or constant registered?
+     * Unlike #getByName, will not instantiate if registered but not yet lazy created.
+     *
+     * @param clazzOrName class or name of factory or constant
+     */
+    static isRegistered(clazzOrName: InjectableClass<unknown> | GettableClass<unknown> | string): boolean;
 }
+/** Options for Injectable decorator */
+export interface InjectableOptions<T> {
+    /**
+     * Register "as" this parent class or name.
+     * A class *must* be a parent class.
+     * The name string works for interfaces, but lacks type safety.
+     */
+    as?: GettableClass<unknown> | string;
+    /** Don't auto-detect constructor dependencies - use this factory function instead */
+    factory?: () => T;
+    /** Don't auto-detect constructor dependencies - use these instead */
+    dependencies?: DependencyList;
+}
+/**
+ * Typescript Decorator for registering classes for injection.
+ *
+ * Must enable options in tsconfig.json:
+ * {
+ *   "compilerOptions": {
+ *     "experimentalDecorators": true,
+ *     "emitDecoratorMetadata": true
+ *   }
+ * }
+ *
+ * Usage:
+ *
+ * Like Injector.register(MyServiceClass, [Dependency1, Dependency2]
+ *   @Injectable()
+ *   class MyServiceClass {
+ *       constructor(one: Dependency1, two: Dependency2) {}
+ *   }
+ *
+ * Like Injector.register(MyServiceClass, [Dependency1, "registered-constant"]
+ *   @Injectable({dependencies=[Dependency1, "registered-constant"]})
+ *   class MyServiceClass {
+ *       constructor(one: Dependency1, two: string) {}
+ *   }
+ *
+ * Like Injector.register(MyServiceClass, () = new MyServiceClass())
+ *   @Injectable({factory: () = new MyServiceClass()})
+ *   class MyServiceClass {
+ *   }
+ *
+ * Like Injector.register(HexagonalPort, () => new HexagonalAdaptor())
+ *   abstract class HexagonalPort {
+ *     abstract getThing(): string;
+ *   }
+ *   @Injectable({as: HexagonalPort })
+ *   class HexagonalAdaptor extends HexagonalPort {
+ *     getThing() { return "thing"; }
+ *   }
+ */
+export declare function Injectable<T>(options?: InjectableOptions<T>): (target: InjectableClass<unknown>) => void;
 export {};

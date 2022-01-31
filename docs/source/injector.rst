@@ -13,6 +13,8 @@ It is built on top of `BottleJS <https://www.npmjs.com/package/bottlejs>`_, with
 wrapper. The original *bottle* is available for more advanced use, though. Even if you are not using Typescript,
 you may still prefer this simplified interface over using BottleJS directly.
 
+As of v3, Injector also supports a Typescript decorator for registering classes.
+
 ``Injector`` depends on one other utility to work:
 
 - :doc:`logger`
@@ -24,6 +26,23 @@ Install
 
     npm install @sailplane/injector @sailplane/logger bottlejs@1.7
 
+Configuration
+^^^^^^^^^^^^^
+
+To use the Typescript decorator, these options must be enabled in ``tsconfig.json``:
+
+.. code-block:: json
+
+    {
+      "compilerOptions": {
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+      }
+    }
+
+If using `esbuild <https://esbuild.github.io/>`_, a plugin such as
+`esbuild-decorators <https://github.com/anatine/esbuildnx/tree/main/packages/esbuild-decorators>`_ is necessary.
+
 Usage with Examples
 ^^^^^^^^^^^^^^^^^^^
 
@@ -33,7 +52,7 @@ Register a class with no dependencies and retrieve it
 Use ``Injector.register(className)`` to register a class with the Injector. Upon the first call
 to ``Injector.get(className)``, the singleton instance will be created and returned.
 
-Example:
+Example without decorator:
 
 .. code-block:: ts
 
@@ -42,6 +61,19 @@ Example:
     export class MyService {
     }
     Injector.register(MyService);
+
+    // Later...
+    const myService = Injector.get(MyService)!;
+
+Example with decorator:
+
+.. code-block:: ts
+
+    import {Injector, Injectable} from "@sailplane/injector";
+
+    @Injectable()
+    export class MyService {
+    }
 
     // Later...
     const myService = Injector.get(MyService)!;
@@ -57,7 +89,7 @@ singleton instance will be created and returned.
 
 ``dependencies`` is an array of either class names or strings with the names of things.
 
-Example:
+Example without decorator:
 
 .. code-block:: ts
 
@@ -74,6 +106,24 @@ Example:
         }
     }
     Injector.register(MyService, [MyHelper, 'stage']);
+
+Example with decorator:
+
+.. code-block:: ts
+
+    import {Injector, Injectable} from "@sailplane/injector";
+
+    @Injectable()
+    export class MyHelper {
+    }
+    Injector.registerConstant('stage', 'dev');
+
+    @Injectable({dependencies: [MyHelper, 'stage']})
+    export class MyService {
+        constructor(private readonly helper: MyHelper,
+                    private readonly stage: string) {
+        }
+    }
 
 Register a class with static $inject array
 ------------------------------------------
@@ -116,7 +166,7 @@ you can register a factory function.
 Use ``Injector.register<T>(className, factory: ()=>T)`` to register a class with your
 own factory function for instantiating the singleton instance.
 
-Example:
+Example without decorator:
 
 .. code-block:: ts
 
@@ -134,14 +184,95 @@ Example:
     Injector.register(MyService,
                       () => new MyService(Injector.get(MyHelper)!, process.env.STAGE!));
 
+Example with decorator:
+
+.. code-block:: ts
+
+    import {Injector, Injectable} from "@sailplane/injector";
+
+    @Injectable()
+    export class MyHelper {
+    }
+
+    @Injectable({factory: () => new MyService(Injector.get(MyHelper)!, process.env.STAGE!)})
+    export class MyService {
+        constructor(private readonly helper: MyHelper,
+                    private readonly stage: string) {
+        }
+    }
+
+Register a child class that implements a parent
+-----------------------------------------------
+
+A common dependency injection pattern is to invent code dependencies by having business logic
+define an interface it needs to talk to via an abstract class, and then elsewhere have a child
+class define the actual behavior. Runtime options could even choose between implementations.
+
+Here's the business logic code:
+
+.. code-block:: ts
+
+  abstract class SpecialDataRepository {
+    abstract get(id: string): Promise<SpecialData>;
+  }
+
+  class SpecialBizLogicService {
+    constructor(dataRepo: SpecialDataRepository) {}
+    public async calculate(id: string) {
+      const data = await this.dataRepo.get(id);
+      // do stuff
+    }
+  }
+  Injector.register(SpecialBizLogicService); // Could use @Injectable() instead
+
+Without decorators, we use ``Injector.register<T>(className, factory: ()=>T)``
+to register the implementing repository, which could be done conditionally:
+
+Example without decorator:
+
+.. code-block:: ts
+
+    import {Injector} from "@sailplane/injector";
+
+    export class LocalDataRepository extends SpecialDataRepository {
+      async get(id: string): Promise<SpecialData> {
+        // implementation ....
+      }
+    }
+
+    export class RemoteDataRepository extends SpecialDataRepository {
+      async get(id: string): Promise<SpecialData> {
+        // implementation ....
+      }
+    }
+
+    const isLocal = !!process.env.SHELL;
+    Injector.register(
+      MyService,
+      () => isLocal ? new LocalDataRepository() : new RemoteDataRepository()
+    );
+
+Example with decorator (can't be conditional):
+
+.. code-block:: ts
+
+    import {Injector, Injectable} from "@sailplane/injector";
+
+    @Injectable({as: SpecialDataRepository})
+    export class RemoteDataRepository extends SpecialDataRepository {
+      async get(id: string): Promise<SpecialData> {
+        // implementation ....
+      }
+    }
+
 Register anything with a factory and fetch it by name
 -----------------------------------------------------
 
 If you need to inject something other than a class, you can register a factory to create
-anything and give it a name. This is particularly useful if you have multiple implementations
-of an interface, and one to register one of them by the interface name at runtime. Since
+anything and give it a name. This is useful if you have multiple implementations
+of an _interface_, and one to register one of them by the interface name at runtime. Since
 interfaces don't exist at runtime (they don't exist in Javascript), you must define the name
-yourself.
+yourself. (See previous example using an abstract base class for a more type-safe approach.)
 
 Use ``Injector.registerFactory<T>(name: string, factory: ()=>T)`` to register any object with your
 own factory function for returning the singleton instance.
@@ -161,7 +292,7 @@ Example: Inject a configuration
 
     const config = await Injector.getByName('config');
 
-Example: Inject an interface implementation
+Example: Inject an interface implementation, conditionally and no decorator
 
 .. code-block:: ts
 
@@ -172,7 +303,7 @@ Example: Inject an interface implementation
     }
 
     export class FoobarServiceImpl implements FoobarService {
-        constructor(private readonly stateStorage: StateStorage); {}
+        constructor(private readonly stateStorage: StateStorage) {}
 
         doSomething(): void {
             this.stateStorage.set('foobar', 'did-it', 'true');
@@ -198,7 +329,35 @@ Example: Inject an interface implementation
 
     export class MyService {
         static readonly $inject = ['FoobarService']; // Note: This is a string!
-        constructor(private readonly foobareSvc: FoobarService) {
+        constructor(private readonly foobarSvc: FoobarService) {
+        }
+    }
+    Injector.register(MyService);
+
+Example: Inject an interface implementation with the decorator
+
+.. code-block:: ts
+
+    import {Injector, Injectable} from "@sailplane/injector";
+
+    export interface FoobarService {
+        doSomething(): void;
+    }
+
+    @Injectable({as: "FoobarService"})
+    export class FoobarServiceImpl implements FoobarService {
+        constructor(private readonly stateStorage: StateStorage) {}
+
+        doSomething(): void {
+            // code
+        }
+    }
+
+    // Elsewhere...
+
+    @Injectable({dependencies: ['FoobarService']}) // Note: This is a string!
+    export class MyService {
+        constructor(private readonly foobarSvc: FoobarService) {
         }
     }
     Injector.register(MyService);

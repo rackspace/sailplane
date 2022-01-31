@@ -6,12 +6,15 @@
  *
  * @see https://github.com/young-steveo/bottlejs
  */
+import "reflect-metadata";
 import * as Bottle from 'bottlejs';
 import {Logger} from "@sailplane/logger";
 
 const logger = new Logger('injector');
 
-type DependencyList = ({new(...args): any}|string)[];
+type InjectableClass<T> = {new (...args): T, $inject?: DependencyList, name: string};
+type GettableClass<T> = Function & {prototype: T, name: string};
+type DependencyList = (InjectableClass<unknown>|string)[];
 
 /** Convert list into array of dependency names */
 function toNamedDependencies(list: DependencyList): string[] {
@@ -23,6 +26,9 @@ function toNamedDependencies(list: DependencyList): string[] {
     }
 }
 
+// verifies that automatically injected dependencies are not undefined
+(Bottle.config as any).strict = true;
+
 /**
  * Wraps up type-safe version of BottleJs for common uses.
  *
@@ -33,11 +39,9 @@ export class Injector {
 
     /**
      * This may be called at beginning of process.
-     * Not required at this point, but may help catch some mistakes.
+     * @deprecated
      */
     static initialize() {
-        // verifies that automatically injected dependencies are not undefined
-        (Bottle.config as any).strict = true;
     }
 
     /**
@@ -57,48 +61,45 @@ export class Injector {
      * -   constructor(other, constValue) {};
      * - }
      * - Injector.register(MyServiceClass);
-
+     *
      * Example service that lazy instantiates with a factory function:
      * - Injector.register(MyServiceClass,
      * -                   () => new MyServiceClass(Injector.get(OtherClass)!, MyArg));
      *
      * @param clazz the class to register. Ex: MyClass. NOT an instance, the class.
      * @param factoryOrDependencies see above examples. Optional.
-     * @return true if registered, false if not (duplicate or bad)
+     * @param asName by default is clazz.name, but may specify another name to register as
+     * @throws TypeError if duplicate or bad request
      */
-    static register<T>(clazz: {new(...args): T, $inject?: DependencyList, name: string},
-                       factoryOrDependencies?: (() => T)|DependencyList): boolean {
-
-        if (!clazz || !clazz.name) {
-            logger.error("Class to register is undefined", clazz);
-            return false;
+    static register<T>(
+        clazz: InjectableClass<T>,
+        factoryOrDependencies?: (() => T) | DependencyList,
+        asName: string = clazz.name
+    ): void {
+        if (!clazz || !asName) {
+            throw new TypeError("Class to register is undefined: " + clazz.toString() + " " + asName);
         }
-        else if (Injector.bottle.container[clazz.name] == undefined) {
+        else if (Injector.bottle.container[asName] == undefined) {
             if (!factoryOrDependencies) {
                 const dependencies = toNamedDependencies(clazz.$inject as DependencyList);
-                logger.debug(`Registering service ${clazz.name} with dependencies: ` + dependencies.toString() );
-                Injector.bottle.service(clazz.name, clazz, ...dependencies);
-                return true;
+                logger.debug(`Registering class ${clazz.name} with dependencies: ` + dependencies.toString() );
+                Injector.bottle.service(asName, clazz, ...dependencies);
             }
             else if (Array.isArray(factoryOrDependencies)) {
                 const dependencies = toNamedDependencies(factoryOrDependencies);
-                logger.debug(`Registering service ${clazz.name} with dependencies: ` + dependencies.toString() );
-                Injector.bottle.service(clazz.name, clazz, ...dependencies);
-                return true;
+                logger.debug(`Registering class ${clazz.name} with dependencies: ` + dependencies.toString() );
+                Injector.bottle.service(asName, clazz, ...dependencies);
             }
             else if (typeof factoryOrDependencies === 'function') {
-                logger.debug(`Registering service ${clazz.name} with factory`);
-                Injector.bottle.factory(clazz.name, factoryOrDependencies);
-                return true;
+                logger.debug(`Registering class ${clazz.name} with factory`);
+                Injector.bottle.factory(asName, factoryOrDependencies);
             }
             else {
-                logger.error(`Unknown type of factoryOrDependencies when registering ${clazz.name} with Injector`);
-                return false;
+                throw new TypeError(`Unknown type of factoryOrDependencies when registering ${clazz.name} with Injector`);
             }
         }
         else {
-            logger.debug(`Already registered service ${clazz.name}`);
-            return false;
+            logger.warn(`Already registered class ${clazz.name} as ${asName}`);
         }
     }
 
@@ -111,22 +112,18 @@ export class Injector {
      * @see #getByName(name)
      * @param name name to give the inject.
      * @param factory function that returns a class.
-     * @return true if registered, false if not (duplicate or bad)
+     * @throws TypeError if duplicate or bad request
      */
-    static registerFactory<T>(name: string, factory: (() => T)): boolean {
-
+    static registerFactory<T>(name: string, factory: (() => T)): void {
         if (!name) {
-            logger.error("Name to register is blank");
-            return false;
+            throw new TypeError("Name to register is blank");
         }
         else if (Injector.bottle.container[name] == undefined) {
-            logger.debug(`Registering service ${name} with factory`);
+            logger.debug(`Registering ${name} with factory`);
             Injector.bottle.factory(name, factory);
-            return true;
         }
         else {
-            logger.debug(`Already registered factory ${name}`);
-            return false;
+            logger.warn(`Already registered factory ${name}`);
         }
     }
 
@@ -136,16 +133,17 @@ export class Injector {
      * @see #getByName(name)
      * @param name name to give this constant.
      * @param value value to return when the name is requested.
+     * @throws TypeError if duplicate or bad request
      */
     static registerConstant<T>(name: string, value: T): void {
         if (!name) {
-            logger.error("Constant name to register is blank");
+            throw new TypeError("Constant name to register is blank");
         }
         else if (Injector.bottle.container[name] == undefined) {
             Injector.bottle.constant(name, value);
         }
         else {
-            logger.debug(`Already registered constant "${name}"`);
+            logger.warn(`Already registered constant "${name}"`);
         }
     }
 
@@ -156,7 +154,7 @@ export class Injector {
      * @param clazz the class to fetch. Ex: MyClass. NOT an instance, the class.
      * @return the singleton instance of the requested class, undefined if not registered.
      */
-    static get<T>(clazz: {new(...args): T;}): T|undefined {
+    static get<T>(clazz: GettableClass<T>): T|undefined {
         return Injector.bottle.container[clazz.name] as T;
     }
 
@@ -172,4 +170,107 @@ export class Injector {
     static getByName<T>(name: string): T|undefined {
         return Injector.bottle.container[name] as T;
     }
+
+    /**
+     * Is a class, factory, or constant registered?
+     * Unlike #getByName, will not instantiate if registered but not yet lazy created.
+     *
+     * @param clazzOrName class or name of factory or constant
+     */
+    static isRegistered(
+        clazzOrName: InjectableClass<unknown> | GettableClass<unknown> | string
+    ): boolean {
+        const name = typeof clazzOrName === "string" ? clazzOrName : clazzOrName.name;
+        return name in Injector.bottle.container;
+    }
+}
+
+/** Options for Injectable decorator */
+export interface InjectableOptions<T> {
+    /**
+     * Register "as" this parent class or name.
+     * A class *must* be a parent class.
+     * The name string works for interfaces, but lacks type safety.
+     */
+    as?: GettableClass<unknown> | string;
+    /** Don't auto-detect constructor dependencies - use this factory function instead */
+    factory?: () => T;
+    /** Don't auto-detect constructor dependencies - use these instead */
+    dependencies?: DependencyList;
+}
+
+/**
+ * Typescript Decorator for registering classes for injection.
+ *
+ * Must enable options in tsconfig.json:
+ * {
+ *   "compilerOptions": {
+ *     "experimentalDecorators": true,
+ *     "emitDecoratorMetadata": true
+ *   }
+ * }
+ *
+ * Usage:
+ *
+ * Like Injector.register(MyServiceClass, [Dependency1, Dependency2]
+ *   @Injectable()
+ *   class MyServiceClass {
+ *       constructor(one: Dependency1, two: Dependency2) {}
+ *   }
+ *
+ * Like Injector.register(MyServiceClass, [Dependency1, "registered-constant"]
+ *   @Injectable({dependencies=[Dependency1, "registered-constant"]})
+ *   class MyServiceClass {
+ *       constructor(one: Dependency1, two: string) {}
+ *   }
+ *
+ * Like Injector.register(MyServiceClass, () = new MyServiceClass())
+ *   @Injectable({factory: () = new MyServiceClass()})
+ *   class MyServiceClass {
+ *   }
+ *
+ * Like Injector.register(HexagonalPort, () => new HexagonalAdaptor())
+ *   abstract class HexagonalPort {
+ *     abstract getThing(): string;
+ *   }
+ *   @Injectable({as: HexagonalPort })
+ *   class HexagonalAdaptor extends HexagonalPort {
+ *     getThing() { return "thing"; }
+ *   }
+ */
+export function Injectable<T>(options?: InjectableOptions<T>) {
+    return function (target: InjectableClass<unknown>) {
+        let asName: string|undefined = undefined;
+        if (typeof options?.as === "function") {
+            // Validate that 'as' is a parent class
+            let found = false;
+            for (let clazz = target; clazz ; clazz = Object.getPrototypeOf(clazz) as InjectableClass<unknown>) {
+                if (clazz?.name === options.as.name) {
+                    found = true;
+                    asName = options.as.name;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new TypeError(`${options.as.name} is not a parent class of ${target.name} in @Injectable()`);
+            }
+        }
+        else if (typeof options?.as === "string") {
+            asName = options.as;
+        }
+
+        if (options?.factory && options.dependencies) {
+            throw new TypeError(`Cannot specify both factory and dependencies on @Injectable() for ${target.name}`);
+        }
+        else if (options?.factory || options?.dependencies) {
+            Injector.register(target, options.factory ?? options.dependencies, asName);
+        }
+        else {
+            const metadata = Reflect.getMetadata(
+                "design:paramtypes", target
+            ) as InjectableClass<unknown>[]|undefined;
+            const dependencies = metadata?.map(clazz => clazz.name);
+            Injector.register(target, dependencies, asName);
+        }
+    };
 }

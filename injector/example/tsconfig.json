@@ -11,6 +11,8 @@
     "declaration": false,
     "removeComments": true,
     "strictNullChecks": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "target": "es2017",
     "typeRoots": [
       "node_modules/@types"
