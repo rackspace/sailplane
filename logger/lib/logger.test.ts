@@ -1,8 +1,21 @@
-import { LogLevels } from './logger';
+import { LogFormat, LogLevel } from './common';
+
+const mockEnv = {
+    AWS_REGION: "us-test-1",
+    AWS_LAMBDA_FUNCTION_NAME: "unitTest",
+    AWS_LAMBDA_FUNCTION_VERSION: "2",
+    AWS_LAMBDA_FUNCTION_MEMORY_SIZE: "128",
+    ENVIRONMENT: "",
+    STAGE: "",
+    SERVERLESS_STAGE: "test",
+    _X_AMZN_TRACE_ID: "",
+};
+
+const timestampRegEx = /^20\d\d-\d\d-\d\dT\d\d:\d\d:.*/;
 
 describe('Logger', () => {
     let Logger;
-    let originalConsoleLog;
+    // let originalConsoleLog;
     let mockLog: jest.Mock;
     let mockDebug: jest.Mock;
     let mockInfo: jest.Mock;
@@ -10,19 +23,20 @@ describe('Logger', () => {
     let mockError: jest.Mock;
 
     beforeEach(() => {
-        Logger = require('./logger').Logger;
-        originalConsoleLog = global.console.log;
+        Object.assign(process.env, mockEnv);
+        // originalConsoleLog = global.console.log;
         global.console.log = mockLog = jest.fn();
         global.console.debug = mockDebug = jest.fn();
         global.console.info = mockInfo = jest.fn();
         global.console.warn = mockWarn = jest.fn();
         global.console.error = mockError = jest.fn();
+        Logger = require('./logger').Logger;
     });
 
-    afterEach(() => {
-        global.console.log = originalConsoleLog;
-        mockLog = undefined as any;
-    });
+    // afterEach(() => {
+    //     global.console.log = originalConsoleLog;
+    //     mockLog = undefined as any;
+    // });
 
     describe('globalLogLevel', () => {
         test('set to "NONE" with environment variable', () => {
@@ -34,16 +48,18 @@ describe('Logger', () => {
             Logger = require('./logger').Logger;
 
             // THEN
-            expect(Logger.globalLogLevel).toBe(1);
+            expect(new Logger("").level).toBe(1);
         });
     });
 
     describe('configured for AWS CloudWatch environment', () => {
         beforeEach(() => {
-            Logger.globalLogLevel = LogLevels.DEBUG;
-            Logger.outputLevels = false;
-            Logger.logTimestamps = false;
-            Logger.formatObjects = false;
+            Logger.initialize({
+                level: LogLevel.DEBUG,
+                outputLevels: false,
+                logTimestamps: false,
+                format: LogFormat.FLAT,
+            });
         });
 
         describe('debug level', () => {
@@ -55,11 +71,9 @@ describe('Logger', () => {
                 logger.debug('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(2);
-                expect(mockDebug.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockDebug.mock.calls[0][1]).toEqual("message");
+                expect(mockLog).not.toHaveBeenCalled();
+                expect(mockDebug).toHaveBeenCalledTimes(1);
+                expect(mockDebug).toHaveBeenCalledWith("LoggerTest:", "message");
             });
 
             test('debug(message, params) to CloudWatch', () => {
@@ -70,27 +84,24 @@ describe('Logger', () => {
                 logger.debug('message', 1, true, 'third');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(5);
-                expect(mockDebug.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockDebug.mock.calls[0][1]).toEqual("message");
-                expect(mockDebug.mock.calls[0][2]).toEqual(1);
-                expect(mockDebug.mock.calls[0][3]).toEqual(true);
-                expect(mockDebug.mock.calls[0][4]).toEqual('third');
+                expect(mockDebug).toHaveBeenCalledWith(
+                    "LoggerTest:", "message", 1, true, "third"
+                );
             });
 
             test('debug(message) to CloudWatch when log level is WARN', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
+                const logger = new Logger({
+                    category: "LoggerTest",
+                    level: LogLevel.WARN,
+                });
 
                 // WHEN
                 logger.debug('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(0);
+                expect(mockLog).not.toHaveBeenCalled();
+                expect(mockDebug).not.toHaveBeenCalled();
             });
 
             test('debugObject(message, object) to CloudWatch', () => {
@@ -102,40 +113,51 @@ describe('Logger', () => {
                 logger.debugObject('Formatted ', obj);
 
                 // THEN
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(2);
-                expect(mockDebug.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockDebug.mock.calls[0][1]).toEqual("Formatted {\"message\":\"I'm a teapot\",\"statusCode\":418}");
+                expect(mockDebug).toHaveBeenCalledWith(
+                    "LoggerTest:",
+                    "Formatted ", "{\"message\":\"I'm a teapot\",\"statusCode\":418}"
+                );
             });
 
             test('debugObject(message) to CloudWatch when log level is INFO', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.INFO;
+                const logger = new Logger({
+                    category: "LoggerTest",
+                    level: LogLevel.INFO,
+                });
 
                 // WHEN
                 logger.debugObject('message', {});
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(0);
+                expect(mockDebug).not.toHaveBeenCalled();
             });
         });
 
         describe('info level', () => {
-            test('info(message) to CloudWatch', () => {
+            test.only('info(message) to CloudWatch', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
+                const logger = new Logger({ category: "LoggerTest", format: LogFormat.STRUCT });
 
                 // WHEN
-                logger.info('message');
+                logger.info('text');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(2);
-                expect(mockInfo.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockInfo.mock.calls[0][1]).toEqual("message");
+                expect(mockInfo).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockInfo.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    level: "INFO",
+                    message: "text",
+                    category: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                });
+
+                // expect(mockInfo.mock.calls[0].length).toBe(2);
+                // expect(mockInfo.mock.calls[0][0]).toEqual("LoggerTest:");
+                // expect(mockInfo.mock.calls[0][1]).toEqual("message");
             });
 
             test('info(message, params) to CloudWatch', () => {
@@ -158,7 +180,7 @@ describe('Logger', () => {
             test('info(message) to CloudWatch when log level is WARN', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
+                Logger.globalLogLevel = LogLevel.WARN;
 
                 // WHEN
                 logger.info('message');
@@ -186,7 +208,7 @@ describe('Logger', () => {
             test('infoObject(message) to CloudWatch when log level is NONE', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                Logger.globalLogLevel = LogLevel.NONE;
 
                 // WHEN
                 logger.infoObject('message', {});
@@ -233,7 +255,7 @@ describe('Logger', () => {
             test('warn(message) to CloudWatch when log level is ERROR', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.ERROR;
+                Logger.globalLogLevel = LogLevel.ERROR;
 
                 // WHEN
                 logger.warn('message');
@@ -261,7 +283,7 @@ describe('Logger', () => {
             test('warnObject(message) to CloudWatch when log level is NONE', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                Logger.globalLogLevel = LogLevel.NONE;
 
                 // WHEN
                 logger.warnObject('message', {});
@@ -308,7 +330,7 @@ describe('Logger', () => {
             test('error(message) to CloudWatch when log level is NONE', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                Logger.globalLogLevel = LogLevel.NONE;
 
                 // WHEN
                 logger.error('message');
@@ -336,7 +358,7 @@ describe('Logger', () => {
             test('errorObject(message) to CloudWatch when log level is NONE', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                Logger.globalLogLevel = LogLevel.NONE;
 
                 // WHEN
                 logger.errorObject('message', {});
@@ -350,7 +372,7 @@ describe('Logger', () => {
 
     describe('configured for local console environment', () => {
         beforeEach(() => {
-            Logger.globalLogLevel = LogLevels.DEBUG;
+            Logger.globalLogLevel = LogLevel.DEBUG;
             Logger.outputLevels = true;
             Logger.logTimestamps = true;
             Logger.formatObjects = true;
@@ -414,7 +436,7 @@ describe('Logger', () => {
             test('debug(message) to console when log level is INFO', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.INFO;
+                Logger.globalLogLevel = LogLevel.INFO;
 
                 // WHEN
                 logger.debug('message');
@@ -465,7 +487,7 @@ describe('Logger', () => {
             test('info(message) to console when log level is WARN', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
+                Logger.globalLogLevel = LogLevel.WARN;
 
                 // WHEN
                 logger.info('message');
@@ -495,7 +517,7 @@ describe('Logger', () => {
             test('infoObject(message) to console when log level is WARN', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
+                Logger.globalLogLevel = LogLevel.WARN;
 
                 // WHEN
                 logger.infoObject('message', {});
@@ -548,7 +570,7 @@ describe('Logger', () => {
             test('warn(message) to console when log level is ERROR', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.ERROR;
+                Logger.globalLogLevel = LogLevel.ERROR;
 
                 // WHEN
                 logger.warn('message');
@@ -578,7 +600,7 @@ describe('Logger', () => {
             test('warnObject(message) to console when log level is ERROR', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.ERROR;
+                Logger.globalLogLevel = LogLevel.ERROR;
 
                 // WHEN
                 logger.warnObject('message', {});
@@ -646,7 +668,7 @@ describe('Logger', () => {
             test('error(message) to console when log level is NONE', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                Logger.globalLogLevel = LogLevel.NONE;
 
                 // WHEN
                 logger.warn('message');
@@ -676,7 +698,7 @@ describe('Logger', () => {
             test('errorObject(message) to console when log level is NONE', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                Logger.globalLogLevel = LogLevel.NONE;
 
                 // WHEN
                 logger.warnObject('message', {});
