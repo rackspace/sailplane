@@ -31,18 +31,26 @@ function getEnvironment(): any {
 /**
  * Format a log line in flat format.
  *
- * @param config configuration
+ * @param loggerConfig configuration of Logger instance
+ * @param globalConfig global configuration
  * @param level logging level
  * @param message text to log
  * @param params A list of JavaScript objects to output.
- * @return array to pass to a console function, or null to output nothing.
+ * @return array to pass to a console function
  */
-export const structuredFormatter: FormatterFn = (config: LoggerConfig, level: LogLevel, message: string, params: any[]): any[] => {
+export const structuredFormatter: FormatterFn = (
+    loggerConfig: LoggerConfig,
+    globalConfig: LoggerConfig,
+    level: LogLevel,
+    message: string,
+    params: any[]
+): any[] => {
     const item = {
         ...getEnvironment(),
-        ...config.attributes,
+        ...globalConfig.attributes,
+        ...loggerConfig.attributes,
         level: LogLevel[level],
-        category: config.category,
+        module: loggerConfig.module,
         timestamp: new Date().toISOString().substr(0, 19),
         message,
     };

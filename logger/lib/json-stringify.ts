@@ -14,6 +14,7 @@ function extractErrorSource(stack?: string): string {
 }
 
 /**
+ * Enhanced replacer for JSON.stringify
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Cyclic_object_value
  */
 const getReplacer = () => {
@@ -21,8 +22,7 @@ const getReplacer = () => {
     return (key, value) => {
         if (typeof value === "object" && value !== null) {
             if (seen.has(value)) {
-                // Break cycle
-                return;
+                return "<cyclic>";
             }
             seen.add(value);
         }
