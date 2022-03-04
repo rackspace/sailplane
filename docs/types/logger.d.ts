@@ -1,15 +1,9 @@
-export declare enum LogLevels {
-    NONE = 1,
-    ERROR = 2,
-    WARN = 3,
-    INFO = 4,
-    DEBUG = 5
-}
+import { LoggerConfig, LogLevel } from "./common";
 /**
  * Custom logger class.
  *
  * Works much like console's logging, but includes levels, date/time,
- * and category (file) on each line.
+ * and module (file) on each line, or structured formatting if configured to do so.
  *
  * Usage:
  *   import {Logger} from "@sailplane/logger";
@@ -17,129 +11,89 @@ export declare enum LogLevels {
  *   logger.info("Hello World!");
  */
 export declare class Logger {
-    private category;
     /**
-     * Global logging level.
-     * May be initialized via LOG_LEVEL environment variable, or set by code.
+     * Configure global defaults. Individual Logger instances may override.
+     * @param globalConfig configuration properties to changed - undefined properties
+     *        will retain existing value
      */
-    static globalLogLevel: LogLevels;
-    /**
-     * Include the level in log output?
-     * Defaults to true if not streaming to CloudWatch or running Node.js v9 or older.
-     * May also be set directly by code.
-     * Note: AWS behavior changed with nodejs10.x runtime - it now includes log levels automatically.
-     */
-    static outputLevels: boolean;
-    /**
-     * Include timestamps in log output?
-     * Defaults to false if streaming to CloudWatch, true otherwise.
-     * (CloudWatch provides timestamps.)
-     * May override by setting the LOG_TIMESTAMPS environment variable to 'true' or 'false',
-     * or set by code.
-     */
-    static logTimestamps: boolean;
-    /**
-     * Pretty format objects when stringified to JSON?
-     * Defaults to false if streaming to CloudWatch, true otherwise.
-     * (Best to let CloudWatch provide the formatting.)
-     * May override by setting the LOG_FORMAT_OBJECTS environment variable to 'true' or 'false',
-     * or set by code.
-     */
-    static formatObjects: boolean;
+    static initialize(globalConfig: Partial<LoggerConfig>): void;
+    private readonly config;
     /**
      * Construct.
-     * @param category logging category to include in each line.
-     *                 Source file name or class name are good choices.
+     * @param ops LoggerConfig, or just module name as string
      */
-    constructor(category: string);
+    constructor(ops: string | LoggerConfig);
     /**
-     * Format a log line. Helper for #debug, #info, #warn, and #error.
+     * The Log Level of this Logger
+     */
+    get level(): LogLevel;
+    /**
+     * Log an item at given level.
+     * Usually better to use the specific function per log level instead.
      *
-     * @param level logging level
+     * @param level log level
      * @param message text to log
-     * @param optionalParams A list of JavaScript objects to output.
-     *                       The string representations of each of these objects are
-     *                       appended together in the order listed and output.
-     * @return array to pass to a console function, or null to output nothing.
+     * @param params A list of JavaScript objects to output
      */
-    private formatLog;
-    /**
-     * Format a log ine with a stringified object.
-     * Helper for #debugObject, #infoObject, #warnObject, and #errorObject.
-     *
-     * @param level logging level
-     * @param message text to log - may want to end with a space,
-     *                as `{` will immediately follow.
-     * @param object object to stringify to JSON and append to message
-     * @return array to pass to a console function, or null to output nothing.
-     */
-    private formatLogStringified;
+    log(level: LogLevel, message: string, params: any[]): void;
     /**
      * Log a line at DEBUG level.
      *
      * @param message text to log
      * @param optionalParams A list of JavaScript objects to output.
-     *                       The string representations of each of these objects are
-     *                       appended together in the order listed and output.
      */
-    debug(message: any, ...optionalParams: any[]): void;
+    debug(message: string, ...optionalParams: any[]): void;
     /**
      * Log a line at INFO level.
      *
      * @param message text to log
      * @param optionalParams A list of JavaScript objects to output.
-     *                       The string representations of each of these objects are
-     *                       appended together in the order listed and output.
      */
-    info(message: any, ...optionalParams: any[]): void;
+    info(message: string, ...optionalParams: any[]): void;
     /**
      * Log a line at WARN level.
      *
      * @param message text to log
      * @param optionalParams A list of JavaScript objects to output.
-     *                       The string representations of each of these objects are
-     *                       appended together in the order listed and output.
      */
-    warn(message: any, ...optionalParams: any[]): void;
+    warn(message: string, ...optionalParams: any[]): void;
     /**
      * Log a line at ERROR level.
      *
-     * @param message text to log
+     * @param message text or Error instance
      * @param optionalParams A list of JavaScript objects to output.
-     *                       The string representations of each of these objects are
-     *                       appended together in the order listed and output.
      */
-    error(message: any, ...optionalParams: any[]): void;
+    error(message: string | Error, ...optionalParams: any[]): void;
     /**
      * Log a line at DEBUG level with a stringified object.
      *
-     * @param message text to log - may want to end with a space,
-     *                as `{` will immediately follow.
-     * @param object object to stringify to JSON and append to message
+     * @param message text to log
+     * @param object a Javascript object to output
+     * @deprecated #debug has the same result now
      */
     debugObject(message: string, object: any): void;
     /**
      * Log a line at INFO level with a stringified object.
      *
-     * @param message text to log - may want to end with a space,
-     *                as `{` will immediately follow.
-     * @param object object to stringify to JSON and append to message
+     * @param message text to log
+     * @param object a Javascript object to output
+     * @deprecated #info has the same result now
      */
     infoObject(message: string, object: any): void;
     /**
      * Log a line at WARN level with a stringified object.
      *
-     * @param message text to log - may want to end with a space,
-     *                as `{` will immediately follow.
-     * @param object object to stringify to JSON and append to message
+     * @param message text to log
+     * @param object a Javascript object to output
+     * @deprecated #warn has the same result now
      */
     warnObject(message: string, object: any): void;
     /**
      * Log a line at ERROR level with a stringified object.
      *
-     * @param message text to log - may want to end with a space,
-     *                as `{` will immediately follow.
-     * @param object object to stringify to JSON and append to message
+     * @param message text to log
+     * @param object a Javascript object to output
+     * @deprecated #error has the same result now
      */
     errorObject(message: string, object: any): void;
 }

@@ -76,7 +76,9 @@ export class Logger {
         }
     }
 
-    /** The Log Level of this Logger */
+    /**
+     * The Log Level of this Logger
+     */
     get level(): LogLevel {
         return this.config.level;
     }
