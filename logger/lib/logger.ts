@@ -1,6 +1,14 @@
-import { FormatterFn, LogFormat, LoggerConfig, LogLevel } from "./common";
+import {
+    FormatterFn,
+    LogFormat,
+    LoggerAttributes,
+    LoggerConfig,
+    LogLevel
+} from "./common";
 import { structuredFormatter } from "./structured-formatter";
 import { flatFormatter } from "./flat-formatter";
+import { Context } from "aws-lambda";
+import { addLambdaContext } from "./context";
 
 // TODO: sampleRate
 // TODO: tripwire
@@ -57,6 +65,26 @@ export class Logger {
     static initialize(globalConfig: Partial<LoggerConfig>): void {
         Object.assign(globalLoggerConfig, globalConfig);
         globalLoggerConfig.formatter = formatterFnMap[globalLoggerConfig.format];
+    }
+
+    /**
+     * Set some context attributes to the existing collection of global attributes
+     * Use initialize({attributes: {}} to override/reset all attributes.
+     */
+    static addAttributes(attributes: LoggerAttributes): void {
+        globalLoggerConfig.attributes = {...globalLoggerConfig.attributes, ...attributes};
+    }
+
+    /**
+     * Set structured logging global attributes based on Lambda Context:
+     *
+     * - aws_request_id: identifier of the invocation request
+     * - invocation_num: number of invocations of this process (1 = cold start)
+     *
+     * Call this every time the Lambda handler begins.
+     */
+    static setLambdaContext(context: Context): void {
+        addLambdaContext(context);
     }
 
     private readonly config: LoggerConfig;

@@ -21,6 +21,6 @@ export const unhandledExceptionMiddleware = (): middy.MiddlewareObj<APIGatewayPr
             request.response.body = request.error?.toString() ?? '';
         }
 
-        logger.infoObject("Response to API Gateway: ", request.response);
+        logger.info("Response to API Gateway: ", request.response);
     }
 });

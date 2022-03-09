@@ -1,4 +1,5 @@
-import { LoggerConfig, LogLevel } from "./common";
+import { LoggerAttributes, LoggerConfig, LogLevel } from "./common";
+import { Context } from "aws-lambda";
 /**
  * Custom logger class.
  *
@@ -17,6 +18,20 @@ export declare class Logger {
      *        will retain existing value
      */
     static initialize(globalConfig: Partial<LoggerConfig>): void;
+    /**
+     * Set some context attributes to the existing collection of global attributes
+     * Use initialize({attributes: {}} to override/reset all attributes.
+     */
+    static addAttributes(attributes: LoggerAttributes): void;
+    /**
+     * Set structured logging global attributes based on Lambda Context:
+     *
+     * - aws_request_id: identifier of the invocation request
+     * - invocation_num: number of invocations of this process (1 = cold start)
+     *
+     * Call this every time the Lambda handler begins.
+     */
+    static setLambdaContext(context: Context): void;
     private readonly config;
     /**
      * Construct.

@@ -11,6 +11,7 @@ import {
 } from "./types";
 import {resolvedPromiseIsSuccessMiddleware} from "./resolved-promise-is-success";
 import {unhandledExceptionMiddleware} from "./unhandled-exception";
+import { loggerContextMiddleware } from "./logger-context";
 
 const logger = new Logger('lambda-utils');
 
@@ -25,6 +26,7 @@ const logger = new Logger('lambda-utils');
  *   API Gateway result.
  * - Catch http-errors exceptions into proper HTTP responses.
  * - Catch other exceptions and return as HTTP 500
+ * - Set Lambda invocation and API request context in @sailplane/logger
  *
  * This wrapper includes commonly useful middleware. You may further wrap it
  * with your own function that adds additional middleware, or just use it as
@@ -36,6 +38,7 @@ const logger = new Logger('lambda-utils');
  */
 export function wrapApiHandler(handler: AsyncProxyHandlerV1): AsyncMiddyifedHandlerV1 {
     return middy(handler)
+        .use(loggerContextMiddleware())
         .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(httpJsonBodyParser())
         .use(cors())
         .use(resolvedPromiseIsSuccessMiddleware())
@@ -54,6 +57,7 @@ export const wrapApiHandlerV1 = wrapApiHandler;
  *   API Gateway result.
  * - Catch http-errors exceptions into proper HTTP responses.
  * - Catch other exceptions and return as HTTP 500
+ * - Set Lambda invocation and API request context in @sailplane/logger
  *
  * This wrapper includes commonly useful middleware. You may further wrap it
  * with your own function that adds additional middleware, or just use it as
@@ -65,6 +69,7 @@ export const wrapApiHandlerV1 = wrapApiHandler;
  */
 export function wrapApiHandlerV2(handler: AsyncProxyHandlerV2): AsyncMiddyifedHandlerV2 {
     return middy(handler)
+        .use(loggerContextMiddleware())
         .use(httpEventNormalizer()).use(httpHeaderNormalizer()).use(httpJsonBodyParser())
         .use(cors())
         .use(resolvedPromiseIsSuccessMiddleware())

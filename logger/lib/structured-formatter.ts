@@ -1,32 +1,6 @@
 import { FormatterFn, LoggerConfig, LogLevel } from "./common";
 import { jsonStringify } from "./json-stringify";
-
-/**
- * Log context based on runtime environment.
- * @see https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html#configuration-envvars-runtime
- */
-let envContext: any | undefined;
-
-function getEnvironment(): any {
-    if (!envContext) {
-        const addIfExists = (name: string, value: string | undefined, notValue?: string) => {
-            if (value && value !== notValue) {
-                envContext[name] = value;
-            }
-        };
-        envContext = {
-            aws_region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION,
-            function_name: process.env.AWS_LAMBDA_FUNCTION_NAME,
-            function_version: process.env.AWS_LAMBDA_FUNCTION_VERSION,
-            // function_memory_size: process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE,
-        };
-        // addIfExists("function_version", process.env.AWS_LAMBDA_FUNCTION_VERSION, "$LATEST");
-        addIfExists("environment", process.env.ENVIRONMENT);
-        addIfExists("stage", process.env.STAGE || process.env.SERVERLESS_STAGE);
-        addIfExists("xray_trace_id", process.env._X_AMZN_TRACE_ID);
-    }
-    return envContext;
-}
+import { getContext } from "./context";
 
 /**
  * Format a log line in flat format.
@@ -46,12 +20,12 @@ export const structuredFormatter: FormatterFn = (
     params: any[]
 ): any[] => {
     const item = {
-        ...getEnvironment(),
+        ...getContext(),
         ...globalConfig.attributes,
         ...loggerConfig.attributes,
         level: LogLevel[level],
         module: loggerConfig.module,
-        timestamp: new Date().toISOString().substr(0, 19),
+        timestamp: new Date().toISOString(),
         message,
     };
 

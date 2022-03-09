@@ -1,4 +1,5 @@
 import { LogFormat, LogLevel } from './common';
+import type { Context } from "aws-lambda";
 
 const mockEnv = {
     ...process.env,
@@ -14,6 +15,13 @@ const mockEnv = {
     LOG_TO_CLOUDWATCH: undefined,
     LOG_TIMESTAMPS: undefined,
     LOG_FORMAT: undefined,
+};
+
+const mockContext: Partial<Context> = {
+    functionName: "unitTest",
+    functionVersion: "2",
+    memoryLimitInMB: "128",
+    awsRequestId: "aws-request-123",
 };
 
 const timestampRegEx = /^20\d\d-\d\d-\d\dT\d\d:\d\d:.*/;
@@ -60,6 +68,8 @@ describe('Logger', () => {
             process.env.LOG_TO_CLOUDWATCH = 'true';
             process.env.LOG_TIMESTAMPS = "true";
             process.env.LOG_FORMAT = "PRETTY"; // overrides in tests, but provides test coverage
+            process.env.AWS_XRAY_CONTEXT_MISSING = "LOG_ERROR";
+            process.env._X_AMZN_TRACE_ID = "xray-123";
             Logger = require('./logger').Logger;
         });
 
@@ -151,10 +161,12 @@ describe('Logger', () => {
                     logTimestamps: false,
                     format: LogFormat.STRUCT,
                 });
+                Logger.setLambdaContext(mockContext);
             });
 
             test('info(message) to CloudWatch', () => {
                 // GIVEN
+                Logger.addAttributes({correlation_id: "876"});
                 const logger = new Logger({ module: "LoggerTest" });
 
                 // WHEN
@@ -166,7 +178,12 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    invocation_num: 1,
+                    correlation_id: "876",
                     level: "INFO",
                     message: "text",
                     module: "LoggerTest",
@@ -187,7 +204,11 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    invocation_num: 1,
                     level: "INFO",
                     module: "LoggerTest",
                     timestamp: expect.stringMatching(timestampRegEx),
@@ -232,7 +253,11 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    invocation_num: 1,
                     level: "INFO",
                     module: "LoggerTest",
                     timestamp: expect.stringMatching(timestampRegEx),
@@ -341,6 +366,7 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
                     level: "ERROR",
                     message: "text",
@@ -364,6 +390,7 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
                     level: "ERROR",
                     module: "LoggerTest",
@@ -395,6 +422,7 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
                     level: "ERROR",
                     module: "LoggerTest",
@@ -434,6 +462,7 @@ describe('Logger', () => {
                     aws_region: mockEnv.AWS_REGION,
                     function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
                     function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
                     stage: mockEnv.SERVERLESS_STAGE,
                     level: "ERROR",
                     module: "LoggerTest",

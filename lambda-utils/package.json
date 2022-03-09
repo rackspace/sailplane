@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/lambda-utils",
-  "version": "4.0.0",
+  "version": "5.0.0-alpha.1",
   "description": "Use middleware to remove redundancy in AWS Lambda handlers.",
   "keywords": [
     "aws",
@@ -27,11 +27,11 @@
     "Adam Fanello <adam.fanellorackspace.com>"
   ],
   "devDependencies": {
-    "@middy/core": "^2.5.1",
-    "@middy/http-cors": "^2.5.1",
-    "@middy/http-event-normalizer": "^2.5.1",
-    "@middy/http-header-normalizer": "^2.5.1",
-    "@middy/http-json-body-parser": "^2.5.1",
+    "@middy/core": "^2.5.7",
+    "@middy/http-cors": "^2.5.7",
+    "@middy/http-event-normalizer": "^2.5.7",
+    "@middy/http-header-normalizer": "^2.5.7",
+    "@middy/http-json-body-parser": "^2.5.7",
     "@sailplane/logger": "file:../logger",
     "@types/aws-lambda": "^8.10.83",
     "@types/jest": "26.0.24",
@@ -48,7 +48,7 @@
     "@middy/http-event-normalizer": "2.x.x",
     "@middy/http-header-normalizer": "2.x.x",
     "@middy/http-json-body-parser": "2.x.x",
-    "@sailplane/logger": ">=3.x.x"
+    "@sailplane/logger": ">=4.0.0"
   },
   "main": "dist/index.js",
   "files": [
