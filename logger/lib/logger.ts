@@ -10,12 +10,6 @@ import { flatFormatter } from "./flat-formatter";
 import { Context } from "aws-lambda";
 import { addLambdaContext } from "./context";
 
-// TODO: sampleRate
-// TODO: tripwire
-// TODO: context from Lambda - context.awsRequestId - add to LambdaUtils project
-//  https://github.com/awslabs/aws-lambda-powertools-typescript/blob/main/packages/logger/src/middleware/middy.ts
-//  https://docs.aws.amazon.com/lambda/latest/dg/nodejs-context.html
-
 const levelConsoleFnMap: Record<LogLevel, Function> = {
     /* istanbul ignore next - not used but must be defined */
     [LogLevel.NONE]: () => {},
@@ -93,11 +87,11 @@ export class Logger {
      * Construct.
      * @param ops LoggerConfig, or just module name as string
      */
-    constructor(ops: string | LoggerConfig) {
+    constructor(ops: string | Partial<LoggerConfig>) {
         if (typeof ops === "string") {
-            this.config = {...globalLoggerConfig, module: ops};
+            this.config = {...globalLoggerConfig, attributes: undefined, module: ops};
         } else {
-            this.config = {...globalLoggerConfig, ...ops};
+            this.config = {...globalLoggerConfig, attributes: undefined, ...ops};
             if (ops.format && !ops.formatter) {
                 this.config.formatter = formatterFnMap[ops.format];
             }

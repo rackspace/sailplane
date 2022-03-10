@@ -37,7 +37,7 @@ export declare class Logger {
      * Construct.
      * @param ops LoggerConfig, or just module name as string
      */
-    constructor(ops: string | LoggerConfig);
+    constructor(ops: string | Partial<LoggerConfig>);
     /**
      * The Log Level of this Logger
      */

@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/aws-https",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "HTTPS client with AWS Signature v4",
   "keywords": [
     "aws",
@@ -38,7 +38,7 @@
     "typescript": "^3.8.3"
   },
   "peerDependencies": {
-    "@sailplane/logger": "2.x.x"
+    "@sailplane/logger": ">=2.0.0"
   },
   "dependencies": {
     "aws4": "^1.11.0"

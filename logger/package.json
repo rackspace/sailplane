@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/logger",
-  "version": "4.0.0-alpha.1",
+  "version": "4.0.0",
   "description": "CloudWatch and serverless-offline friendly logger.",
   "keywords": [
     "aws",
@@ -38,6 +38,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist/common.*",
+    "dist/context.*",
     "dist/flat-formatter.*",
     "dist/index.*",
     "dist/json-stringify.*",

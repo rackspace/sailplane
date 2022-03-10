@@ -111,6 +111,6 @@ export function apiFailure(statusCode: number, message?: string): APIGatewayProx
         body: message || ''
     };
 
-    logger.warnObject("Response to API Gateway: ", response);
+    logger.warn("Response to API Gateway: ", response);
     return response;
 }

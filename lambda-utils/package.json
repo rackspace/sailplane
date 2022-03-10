@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/lambda-utils",
-  "version": "5.0.0-alpha.1",
+  "version": "5.0.0",
   "description": "Use middleware to remove redundancy in AWS Lambda handlers.",
   "keywords": [
     "aws",

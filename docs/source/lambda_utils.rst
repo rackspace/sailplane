@@ -31,6 +31,7 @@ Used with API Gateway v1 (REST API) and v2 (HTTP API), the included middlewares 
 - Catch http-errors exceptions into proper HTTP responses.
 - Catch other exceptions and return as HTTP 500.
    - Unique to LambdaUtils!
+- Registers Lambda context with Sailplane's `logger <logger>` for structured logging. (Detail below.)
 - Fully leverages Typescript and async syntax.
 
 See `Middy middlewares <https://middy.js.org/#:~:text=available%20middlewares>`_ for details on those.
@@ -77,6 +78,16 @@ To upgrade from older versions of lambda-utils, remove the old lambda-utils and 
 and then follow the install instructions above to install the latest. See also the
 `Middy upgrade instructions <https://github.com/middyjs/middy/blob/main/docs/UPGRADE.md>`_.
 
+Structured Logging Attributes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When :doc:`structured logging <logger>` is enabled, LambdaUtils's ``wrapApiHandlerV1`` and ``wrapApiHandleV2``
+include the ``loggerContextMiddleware``, which calls ``Logger.setLambdaContext`` for you and also
+adds the following properties:
+
+- ``api_request_id`` - the request ID from AWS API Gateway
+- ``jwt_sub`` - JWT (including Cognito) authenticated subject of the request
+
 Examples
 ^^^^^^^^
 
@@ -89,7 +100,7 @@ General use
     import * as LambdaUtils from "@sailplane/lambda-utils";
     import * as createError from "http-errors";
 
-    export const hello = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent) => {
+    export const hello = LambdaUtils.wrapApiHandlerV2(async (event: LambdaUtils.APIGatewayProxyEvent) => {
         // These event objects are now always defined, so don't need to check for undefined. 🙂
         const who = event.pathParameters.who;
         let points = Number(event.queryStringParameters.points || '0');
