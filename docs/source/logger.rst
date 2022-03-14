@@ -10,7 +10,7 @@ Sadly, ``console.log`` is the #1 debugging tool when writing serverless code. Lo
 timestamps, context/category names, object formatting, and optional structured logging.
 It's just a few incremental improvements, and yet together takes logging a leap forward.
 
-If your transpiling, be sure to enable source maps
+If you are transpiling, be sure to enable source maps
 (in `Typescript <https://www.typescriptlang.org/docs/handbook/compiler-options.html>`_,
 `Babel <https://babeljs.io/docs/en/options#source-map-options>`_) and the enable use via the
 `source-map-support <https://www.npmjs.com/package/source-map-support>`_ library or

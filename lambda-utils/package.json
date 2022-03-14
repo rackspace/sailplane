@@ -24,7 +24,7 @@
   "author": "Onica Group",
   "homepage": "https://docs.onica.com/projects/sailplane",
   "contributors": [
-    "Adam Fanello <adam.fanellorackspace.com>"
+    "Adam Fanello <adam.fanello@rackspace.com>"
   ],
   "devDependencies": {
     "@middy/core": "^2.5.7",
