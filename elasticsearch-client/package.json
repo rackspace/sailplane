@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/elasticsearch-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Dead simple client for AWS managed Elasticsearch.",
   "keywords": [
     "aws",
@@ -36,7 +36,7 @@
   },
   "peerDependencies": {
     "@sailplane/aws-https": "2.x.x",
-    "@sailplane/logger": "3.x.x"
+    "@sailplane/logger": ">=3.0.0"
   },
   "main": "dist/elasticsearch-client.js",
   "files": [

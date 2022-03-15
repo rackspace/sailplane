@@ -238,7 +238,7 @@ This example shows how to:
 
             // Check for error
             if (!response.ok) {
-                logger.infoObject("External history request returned error: ", response);
+                logger.info("External history request returned error: ", response);
                 throw new createHttpError.InternalServerError(response.error);
             }
 

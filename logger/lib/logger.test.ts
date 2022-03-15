@@ -1,52 +1,88 @@
-import { LogLevels } from './logger';
+import { LogFormat, LogLevel } from './common';
+import type { Context } from "aws-lambda";
+
+const mockEnv = {
+    ...process.env,
+    AWS_REGION: "us-test-1",
+    AWS_LAMBDA_FUNCTION_NAME: "unitTest",
+    AWS_LAMBDA_FUNCTION_VERSION: "2",
+    AWS_LAMBDA_FUNCTION_MEMORY_SIZE: "128",
+    ENVIRONMENT: undefined,
+    STAGE: undefined,
+    SERVERLESS_STAGE: "test",
+    _X_AMZN_TRACE_ID: undefined,
+    LOG_LEVEL: undefined,
+    LOG_TO_CLOUDWATCH: undefined,
+    LOG_TIMESTAMPS: undefined,
+    LOG_FORMAT: undefined,
+};
+
+const mockContext: Partial<Context> = {
+    functionName: "unitTest",
+    functionVersion: "2",
+    memoryLimitInMB: "128",
+    awsRequestId: "aws-request-123",
+};
+
+const timestampRegEx = /^20\d\d-\d\d-\d\dT\d\d:\d\d:.*/;
 
 describe('Logger', () => {
     let Logger;
-    let originalConsoleLog;
-    let mockLog: jest.Mock;
     let mockDebug: jest.Mock;
     let mockInfo: jest.Mock;
     let mockWarn: jest.Mock;
     let mockError: jest.Mock;
 
-    beforeEach(() => {
-        Logger = require('./logger').Logger;
-        originalConsoleLog = global.console.log;
-        global.console.log = mockLog = jest.fn();
+    beforeEach(async () => {
+        // Object.assign(process.env, mockEnv);
+        Object.entries(mockEnv).forEach(([key, value]) => {
+            if (value === undefined) {
+                delete process.env[key];
+            }
+            else {
+                process.env[key] = value;
+            }
+        });
         global.console.debug = mockDebug = jest.fn();
         global.console.info = mockInfo = jest.fn();
         global.console.warn = mockWarn = jest.fn();
         global.console.error = mockError = jest.fn();
+        jest.resetModules();
     });
 
-    afterEach(() => {
-        global.console.log = originalConsoleLog;
-        mockLog = undefined as any;
-    });
-
-    describe('globalLogLevel', () => {
+    describe('Environment variable', () => {
         test('set to "NONE" with environment variable', () => {
             // GIVEN
             process.env.LOG_LEVEL = 'NONE';
-            jest.resetModules();
 
             // WHEN
             Logger = require('./logger').Logger;
 
             // THEN
-            expect(Logger.globalLogLevel).toBe(1);
+            expect(new Logger("").level).toBe(1);
         });
     });
 
     describe('configured for AWS CloudWatch environment', () => {
         beforeEach(() => {
-            Logger.globalLogLevel = LogLevels.DEBUG;
-            Logger.outputLevels = false;
-            Logger.logTimestamps = false;
-            Logger.formatObjects = false;
+            process.env.LOG_TO_CLOUDWATCH = 'true';
+            process.env.LOG_TIMESTAMPS = "true";
+            process.env.LOG_FORMAT = "PRETTY"; // overrides in tests, but provides test coverage
+            process.env.AWS_XRAY_CONTEXT_MISSING = "LOG_ERROR";
+            process.env._X_AMZN_TRACE_ID = "xray-123";
+            Logger = require('./logger').Logger;
         });
 
-        describe('debug level', () => {
+        describe('debug level with flat output', () => {
+            beforeEach(() => {
+                Logger.initialize({
+                    level: LogLevel.DEBUG,
+                    outputLevels: false,
+                    logTimestamps: false,
+                    format: LogFormat.FLAT,
+                });
+            });
+
             test('debug(message) to CloudWatch', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
@@ -55,11 +91,8 @@ describe('Logger', () => {
                 logger.debug('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(2);
-                expect(mockDebug.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockDebug.mock.calls[0][1]).toEqual("message");
+                expect(mockDebug).toHaveBeenCalledTimes(1);
+                expect(mockDebug).toHaveBeenCalledWith("LoggerTest:", "message");
             });
 
             test('debug(message, params) to CloudWatch', () => {
@@ -70,27 +103,23 @@ describe('Logger', () => {
                 logger.debug('message', 1, true, 'third');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(5);
-                expect(mockDebug.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockDebug.mock.calls[0][1]).toEqual("message");
-                expect(mockDebug.mock.calls[0][2]).toEqual(1);
-                expect(mockDebug.mock.calls[0][3]).toEqual(true);
-                expect(mockDebug.mock.calls[0][4]).toEqual('third');
+                expect(mockDebug).toHaveBeenCalledWith(
+                    "LoggerTest:", "message", 1, true, "third"
+                );
             });
 
             test('debug(message) to CloudWatch when log level is WARN', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
+                const logger = new Logger({
+                    module: "LoggerTest",
+                    level: LogLevel.WARN,
+                });
 
                 // WHEN
                 logger.debug('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(0);
+                expect(mockDebug).not.toHaveBeenCalled();
             });
 
             test('debugObject(message, object) to CloudWatch', () => {
@@ -102,412 +131,171 @@ describe('Logger', () => {
                 logger.debugObject('Formatted ', obj);
 
                 // THEN
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(2);
-                expect(mockDebug.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockDebug.mock.calls[0][1]).toEqual("Formatted {\"message\":\"I'm a teapot\",\"statusCode\":418}");
+                expect(mockDebug).toHaveBeenCalledWith(
+                    "LoggerTest:",
+                    "Formatted ", "{\"message\":\"I'm a teapot\",\"statusCode\":418}"
+                );
             });
 
             test('debugObject(message) to CloudWatch when log level is INFO', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.INFO;
+                const logger = new Logger({
+                    module: "LoggerTest",
+                    level: LogLevel.INFO,
+                });
 
                 // WHEN
                 logger.debugObject('message', {});
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(0);
+                expect(mockDebug).not.toHaveBeenCalled();
             });
         });
 
-        describe('info level', () => {
+        describe('info level with structured output', () => {
+
+            beforeEach(() => {
+                Logger.initialize({
+                    level: LogLevel.DEBUG,
+                    outputLevels: false,
+                    logTimestamps: false,
+                    format: LogFormat.STRUCT,
+                });
+                Logger.setLambdaContext(mockContext);
+            });
+
             test('info(message) to CloudWatch', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
+                Logger.addAttributes({correlation_id: "876"});
+                const logger = new Logger({ module: "LoggerTest" });
 
                 // WHEN
-                logger.info('message');
+                logger.info('text');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(2);
-                expect(mockInfo.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockInfo.mock.calls[0][1]).toEqual("message");
+                expect(mockInfo).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockInfo.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    invocation_num: 1,
+                    correlation_id: "876",
+                    level: "INFO",
+                    message: "text",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                });
             });
 
             test('info(message, params) to CloudWatch', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
+                const logger = new Logger({ module: "LoggerTest", format: LogFormat.STRUCT });
 
                 // WHEN
-                logger.info('message', 1, true, 'third');
+                logger.info('text', 1, true, new TypeError("third"));
 
                 // THEN
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(5);
-                expect(mockInfo.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockInfo.mock.calls[0][1]).toEqual("message");
-                expect(mockInfo.mock.calls[0][2]).toEqual(1);
-                expect(mockInfo.mock.calls[0][3]).toEqual(true);
-                expect(mockInfo.mock.calls[0][4]).toEqual('third');
+                expect(mockInfo).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockInfo.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    invocation_num: 1,
+                    level: "INFO",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                    message: "text",
+                    params: [
+                        1,
+                        true,
+                        {
+                            name: "TypeError",
+                            message: "third",
+                            stack: expect.any(String),
+                            source: expect.stringMatching(/^.+:\d+$/)
+                        }
+                    ]
+                });
             });
 
-            test('info(message) to CloudWatch when log level is WARN', () => {
+            test('info(message) to CloudWatch when log level is globally WARN', () => {
                 // GIVEN
+                Logger.initialize({level: LogLevel.WARN});
                 const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
 
                 // WHEN
                 logger.info('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(0);
+                expect(mockInfo).not.toHaveBeenCalled();
             });
 
             test('infoObject(message, object) to CloudWatch', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
                 const obj = {message: "I'm a teapot", statusCode: 418};
+                const logger = new Logger({ module: "LoggerTest", format: LogFormat.STRUCT });
+                expect(logger.level).toEqual(LogLevel.DEBUG);
 
                 // WHEN
                 logger.infoObject('Formatted ', obj);
 
                 // THEN
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(2);
-                expect(mockInfo.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockInfo.mock.calls[0][1]).toEqual("Formatted {\"message\":\"I'm a teapot\",\"statusCode\":418}");
+                expect(mockInfo).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockInfo.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    invocation_num: 1,
+                    level: "INFO",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                    message: "Formatted ",
+                    value: obj
+                });
             });
 
             test('infoObject(message) to CloudWatch when log level is NONE', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                const logger = new Logger({level: LogLevel.NONE});
 
                 // WHEN
                 logger.infoObject('message', {});
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(0);
-            });
-        });
-
-        describe('warn level', () => {
-            test('warn(message) to CloudWatch', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.warn('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(1);
-                expect(mockWarn.mock.calls[0].length).toBe(2);
-                expect(mockWarn.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockWarn.mock.calls[0][1]).toEqual("message");
-            });
-
-            test('warn(message, params) to CloudWatch', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.warn('message', 1, true, 'third');
-
-                // THEN
-                expect(mockWarn.mock.calls.length).toBe(1);
-                expect(mockWarn.mock.calls[0].length).toBe(5);
-                expect(mockWarn.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockWarn.mock.calls[0][1]).toEqual("message");
-                expect(mockWarn.mock.calls[0][2]).toEqual(1);
-                expect(mockWarn.mock.calls[0][3]).toEqual(true);
-                expect(mockWarn.mock.calls[0][4]).toEqual('third');
-            });
-
-            test('warn(message) to CloudWatch when log level is ERROR', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.ERROR;
-
-                // WHEN
-                logger.warn('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
-            });
-
-            test('warnObject(message, object) to CloudWatch', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                const obj = {message: "I'm a teapot", statusCode: 418};
-
-                // WHEN
-                logger.warnObject('Formatted ', obj);
-
-                // THEN
-                expect(mockWarn.mock.calls.length).toBe(1);
-                expect(mockWarn.mock.calls[0].length).toBe(2);
-                expect(mockWarn.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockWarn.mock.calls[0][1]).toEqual("Formatted {\"message\":\"I'm a teapot\",\"statusCode\":418}");
-            });
-
-            test('warnObject(message) to CloudWatch when log level is NONE', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
-
-                // WHEN
-                logger.warnObject('message', {});
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
-            });
-        });
-
-        describe('error level', () => {
-            test('error(message) to CloudWatch', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.error('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(2);
-                expect(mockError.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockError.mock.calls[0][1]).toEqual("message");
-            });
-
-            test('error(message, params) to CloudWatch', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.error('message', 1, true, 'third');
-
-                // THEN
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(5);
-                expect(mockError.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockError.mock.calls[0][1]).toEqual("message");
-                expect(mockError.mock.calls[0][2]).toEqual(1);
-                expect(mockError.mock.calls[0][3]).toEqual(true);
-                expect(mockError.mock.calls[0][4]).toEqual('third');
-            });
-
-            test('error(message) to CloudWatch when log level is NONE', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
-
-                // WHEN
-                logger.error('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
-            });
-
-            test('errorObject(message, object) to CloudWatch', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                const obj = {message: "I'm a teapot", statusCode: 418};
-
-                // WHEN
-                logger.errorObject('Formatted ', obj);
-
-                // THEN
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(2);
-                expect(mockError.mock.calls[0][0]).toEqual("LoggerTest:");
-                expect(mockError.mock.calls[0][1]).toEqual("Formatted {\"message\":\"I'm a teapot\",\"statusCode\":418}");
-            });
-
-            test('errorObject(message) to CloudWatch when log level is NONE', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
-
-                // WHEN
-                logger.errorObject('message', {});
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
+                expect(mockInfo).not.toHaveBeenCalled();
             });
         });
     });
 
     describe('configured for local console environment', () => {
         beforeEach(() => {
-            Logger.globalLogLevel = LogLevels.DEBUG;
-            Logger.outputLevels = true;
-            Logger.logTimestamps = true;
-            Logger.formatObjects = true;
+            process.env.LOG_TO_CLOUDWATCH = 'no';
+            process.env.LOG_FORMAT = "STRUCT";
+            Logger = require('./logger').Logger;
         });
 
-        describe('debug level', () => {
-            test('debug(message) to console', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.debug('message');
-
-                // THEN
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(4);
-                expect(mockDebug.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockDebug.mock.calls[0][1]).toEqual('DEBUG');
-                expect(mockDebug.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockDebug.mock.calls[0][3]).toEqual('message');
+        describe('warn level with pretty output', () => {
+            beforeEach(() => {
+                Logger.initialize({
+                    level: LogLevel.WARN,
+                    outputLevels: true,
+                    logTimestamps: true,
+                    format: LogFormat.PRETTY,
+                });
             });
 
-            test('debug(message, params) to console', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.debug('message', 1, true, 'third');
-
-                // THEN
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(7);
-                expect(mockDebug.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockDebug.mock.calls[0][1]).toEqual('DEBUG');
-                expect(mockDebug.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockDebug.mock.calls[0][3]).toEqual('message');
-                expect(mockDebug.mock.calls[0][4]).toEqual(1);
-                expect(mockDebug.mock.calls[0][5]).toEqual(true);
-                expect(mockDebug.mock.calls[0][6]).toEqual('third');
-            });
-
-            test('debugObject(message, object) to console', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                const obj = {message: "I'm a teapot", statusCode: 418};
-
-                // WHEN
-                logger.debugObject('Formatted ', obj);
-
-                // THEN
-                expect(mockDebug.mock.calls.length).toBe(1);
-                expect(mockDebug.mock.calls[0].length).toBe(4);
-                expect(mockDebug.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockDebug.mock.calls[0][1]).toEqual('DEBUG');
-                expect(mockDebug.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockDebug.mock.calls[0][3]).toEqual("Formatted {\n  \"message\": \"I'm a teapot\",\n  \"statusCode\": 418\n}");
-                // expect(mockDebug.mock.calls[0][0].substr(0, 20)).toMatch(/^....-..-..T..:..:.. $/);
-                // expect(mockDebug.mock.calls[0][0].substr(20)).toEqual("DEBUG LoggerTest: Formatted {\n  \"message\": \"I'm a teapot\",\n  \"statusCode\": 418\n}");
-            });
-
-            test('debug(message) to console when log level is INFO', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.INFO;
-
-                // WHEN
-                logger.debug('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockDebug.mock.calls.length).toBe(0);
-            });
-        });
-
-        describe('info level', () => {
-            test('info(message) to console', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.info('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(4);
-                expect(mockInfo.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockInfo.mock.calls[0][1]).toEqual('INFO');
-                expect(mockInfo.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockInfo.mock.calls[0][3]).toEqual('message');
-            });
-
-            test('info(message, params) to console', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-
-                // WHEN
-                logger.info('message', 1, true, 'third');
-
-                // THEN
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(7);
-                expect(mockInfo.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockInfo.mock.calls[0][1]).toEqual('INFO');
-                expect(mockInfo.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockInfo.mock.calls[0][3]).toEqual('message');
-                expect(mockInfo.mock.calls[0][4]).toEqual(1);
-                expect(mockInfo.mock.calls[0][5]).toEqual(true);
-                expect(mockInfo.mock.calls[0][6]).toEqual('third');
-            });
-
-            test('info(message) to console when log level is WARN', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
-
-                // WHEN
-                logger.info('message');
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(0);
-            });
-
-            test('infoObject(message, object) to console', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                const obj = {message: "I'm a teapot", statusCode: 418};
-
-                // WHEN
-                logger.infoObject('Formatted ', obj);
-
-                // THEN
-                expect(mockInfo.mock.calls.length).toBe(1);
-                expect(mockInfo.mock.calls[0].length).toBe(4);
-                expect(mockInfo.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockInfo.mock.calls[0][1]).toEqual('INFO');
-                expect(mockInfo.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockInfo.mock.calls[0][3]).toEqual("Formatted {\n  \"message\": \"I'm a teapot\",\n  \"statusCode\": 418\n}");
-            });
-
-            test('infoObject(message) to console when log level is WARN', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.WARN;
-
-                // WHEN
-                logger.infoObject('message', {});
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockInfo.mock.calls.length).toBe(0);
-            });
-
-        });
-
-        describe('warn level', () => {
             test('warn(message) to console', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
@@ -516,13 +304,10 @@ describe('Logger', () => {
                 logger.warn('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(1);
-                expect(mockWarn.mock.calls[0].length).toBe(4);
-                expect(mockWarn.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockWarn.mock.calls[0][1]).toEqual('WARN');
-                expect(mockWarn.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockWarn.mock.calls[0][3]).toEqual('message');
+                expect(mockWarn).toHaveBeenCalledWith(
+                    expect.stringMatching(timestampRegEx),
+                    "WARN", "LoggerTest:", "message"
+                );
             });
 
             test('warn(message, params) to console', () => {
@@ -533,29 +318,21 @@ describe('Logger', () => {
                 logger.warn('message', 1, true, 'third');
 
                 // THEN
-                expect(mockWarn.mock.calls.length).toBe(1);
-                expect(mockWarn.mock.calls[0].length).toBe(7);
-                expect(mockWarn.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockWarn.mock.calls[0][1]).toEqual('WARN');
-                expect(mockWarn.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockWarn.mock.calls[0][3]).toEqual('message');
-                expect(mockWarn.mock.calls[0][4]).toEqual(1);
-                expect(mockWarn.mock.calls[0][5]).toEqual(true);
-                expect(mockWarn.mock.calls[0][6]).toEqual('third');
-
+                expect(mockWarn).toHaveBeenCalledWith(
+                    expect.stringMatching(timestampRegEx),
+                    "WARN", "LoggerTest:", "message", 1, true, "third"
+                );
             });
 
             test('warn(message) to console when log level is ERROR', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.ERROR;
+                const logger = new Logger({level: LogLevel.ERROR});
 
                 // WHEN
                 logger.warn('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
+                expect(mockWarn).not.toHaveBeenCalled();
             });
 
             test('warnObject(message, object) to console', () => {
@@ -567,93 +344,108 @@ describe('Logger', () => {
                 logger.warnObject('Formatted ', obj);
 
                 // THEN
-                expect(mockWarn.mock.calls.length).toBe(1);
-                expect(mockWarn.mock.calls[0].length).toBe(4);
-                expect(mockWarn.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockWarn.mock.calls[0][1]).toEqual('WARN');
-                expect(mockWarn.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockWarn.mock.calls[0][3]).toEqual("Formatted {\n  \"message\": \"I'm a teapot\",\n  \"statusCode\": 418\n}");
-            });
-
-            test('warnObject(message) to console when log level is ERROR', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.ERROR;
-
-                // WHEN
-                logger.warnObject('message', {});
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
+                expect(mockWarn).toHaveBeenCalledWith(
+                    expect.stringMatching(timestampRegEx),
+                    "WARN", "LoggerTest:", "Formatted ",
+                    "{\n  \"message\": \"I'm a teapot\",\n  \"statusCode\": 418\n}"
+                );
             });
         });
 
-        describe('error level', () => {
+        describe('error level with structured', () => {
             test('error(message) to console', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
 
                 // WHEN
-                logger.error('message');
+                logger.error('text');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(4);
-                expect(mockError.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockError.mock.calls[0][1]).toEqual('ERROR');
-                expect(mockError.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockError.mock.calls[0][3]).toEqual('message');
+                expect(mockError).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockError.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    level: "ERROR",
+                    message: "text",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                });
             });
 
             test('error(message, params) to console', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
+                const cyclicObject = { items: [] as any[] };
+                cyclicObject.items.push({ value: 2, parent: cyclicObject });
 
                 // WHEN
-                logger.error('message', 1, true, 'third');
+                logger.error('message', "wow", cyclicObject, new Error("cause"));
 
                 // THEN
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(7);
-                expect(mockError.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockError.mock.calls[0][1]).toEqual('ERROR');
-                expect(mockError.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockError.mock.calls[0][3]).toEqual('message');
-                expect(mockError.mock.calls[0][4]).toEqual(1);
-                expect(mockError.mock.calls[0][5]).toEqual(true);
-                expect(mockError.mock.calls[0][6]).toEqual('third');
+                expect(mockError).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockError.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    level: "ERROR",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                    message: "message",
+                    params: [
+                        "wow",
+                        {items: [{value: 2, parent: "<cyclic>"}]},
+                        {
+                            name: "Error",
+                            message: "cause",
+                            stack: expect.any(String),
+                            source: expect.stringMatching(/^.+:\d+$/)
+                        }
+                    ]
+                });
             });
 
-            test('error(exception) to console', () => {
+            test('error(Error) to console', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                const error = new Error("I broke");
 
                 // WHEN
-                logger.error(error);
+                logger.error(new TypeError("Bad Request"));
 
                 // THEN
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(4);
-                expect(mockError.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockError.mock.calls[0][1]).toEqual('ERROR');
-                expect(mockError.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockError.mock.calls[0][3]).toEqual(error);
+                expect(mockError).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockError.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    level: "ERROR",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                    message: "TypeError: Bad Request",
+                    value: {
+                        name: "TypeError",
+                        message: "Bad Request",
+                        stack: expect.any(String),
+                        source: expect.stringMatching(/^.+:\d+$/)
+                    }
+                });
             });
 
             test('error(message) to console when log level is NONE', () => {
                 // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
+                const logger = new Logger({level: LogLevel.NONE});
 
                 // WHEN
                 logger.warn('message');
 
                 // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
+                expect(mockError).not.toHaveBeenCalled();
             });
 
             test('errorObject(message, object) to console', () => {
@@ -665,25 +457,19 @@ describe('Logger', () => {
                 logger.errorObject('Formatted ', obj);
 
                 // THEN
-                expect(mockError.mock.calls.length).toBe(1);
-                expect(mockError.mock.calls[0].length).toBe(4);
-                expect(mockError.mock.calls[0][0]).toMatch(/^....-..-..T..:..:..$/);
-                expect(mockError.mock.calls[0][1]).toEqual('ERROR');
-                expect(mockError.mock.calls[0][2]).toEqual('LoggerTest:');
-                expect(mockError.mock.calls[0][3]).toEqual("Formatted {\n  \"message\": \"I'm a teapot\",\n  \"statusCode\": 418\n}");
-            });
-
-            test('errorObject(message) to console when log level is NONE', () => {
-                // GIVEN
-                const logger = new Logger("LoggerTest");
-                Logger.globalLogLevel = LogLevels.NONE;
-
-                // WHEN
-                logger.warnObject('message', {});
-
-                // THEN
-                expect(mockLog.mock.calls.length).toBe(0);
-                expect(mockWarn.mock.calls.length).toBe(0);
+                expect(mockError).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockError.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    level: "ERROR",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                    message: "Formatted ",
+                    value: obj
+                });
             });
         });
     });

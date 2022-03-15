@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/state-storage",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Serverless state and configuration storage",
   "keywords": [
     "aws",
@@ -37,7 +37,7 @@
     "typescript": "3.8.3"
   },
   "peerDependencies": {
-    "@sailplane/logger": "3.x.x",
+    "@sailplane/logger": ">=3.0.0",
     "@aws-sdk/client-ssm": "3.x.x"
   },
   "main": "dist/index.js",

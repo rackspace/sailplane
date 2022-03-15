@@ -8,6 +8,13 @@ import {
 import * as LambdaUtils from "./index";
 import * as createError from "http-errors";
 
+const mockContext: Partial<Context> = {
+    functionName: "unitTest",
+    functionVersion: "2",
+    memoryLimitInMB: "128",
+    awsRequestId: "aws-request-123",
+};
+
 describe("LambdaUtils", () => {
     describe("wrapApiHandler", () => {
 
@@ -38,7 +45,7 @@ describe("LambdaUtils", () => {
             };
 
             // WHEN
-            const response = await handler(givenEvent, {} as Context, {} as any) as APIGatewayProxyResult;
+            const response = await handler(givenEvent, mockContext as Context, {} as any) as APIGatewayProxyResult;
 
             // THEN
 
@@ -100,13 +107,12 @@ describe("LambdaUtils", () => {
             };
 
             // WHEN
-            const response = await handler(givenEvent, {} as Context, {} as any) as APIGatewayProxyResultV2<any>;
+            const response = await handler(givenEvent, mockContext as Context, {} as any) as APIGatewayProxyResultV2<any>;
 
             // THEN
             expect(response.statusCode).toEqual(200);
             expect(response.body).toEqual("{\"message\":\"Hello\"}");
-            // With HTTP APIs, API Gateway handles CORS, so it is ignored here.
-            expect(response.headers?.["Access-Control-Allow-Origin"]).toBeUndefined();
+            expect(response.headers?.["Access-Control-Allow-Origin"]).toEqual("*");
         });
 
         test("wrapApiHandler promise empty success", async () => {
@@ -127,12 +133,14 @@ describe("LambdaUtils", () => {
                 multiValueQueryStringParameters: null,
                 stageVariables: null,
                 resource: "",
-                requestContext: {} as APIGatewayEventRequestContext
+                requestContext: {
+                    authorizer: {}
+                } as APIGatewayEventRequestContext
             };
 
             // WHEN
             const response = await handler(
-                givenEvent, {} as Context, {} as any
+                givenEvent, mockContext as Context, {} as any
             ) as APIGatewayProxyResult;
 
             // THEN
@@ -165,7 +173,7 @@ describe("LambdaUtils", () => {
 
             // WHEN
             const response = await handler(
-                {} as unknown as APIGatewayProxyEventV2, {} as Context, {} as any
+                {} as unknown as APIGatewayProxyEventV2, mockContext as Context, {} as any
             ) as APIGatewayProxyResult;
 
             // THEN

@@ -35,7 +35,7 @@ module.exports = {
   coverageReporters: [
     "json",
     "text",
-    // "lcov",
+    "lcov",
     "clover"
   ],
 
@@ -43,8 +43,8 @@ module.exports = {
   coverageThreshold: {
       "./lib": {
           branches: 80,
-          functions: 100,
-          statements: 100
+          functions: 90,
+          statements: 90
       }
   },
 

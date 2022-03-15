@@ -11,6 +11,7 @@ import { AsyncMiddyifedHandlerV1, AsyncMiddyifedHandlerV2, AsyncProxyHandlerV1, 
  *   API Gateway result.
  * - Catch http-errors exceptions into proper HTTP responses.
  * - Catch other exceptions and return as HTTP 500
+ * - Set Lambda invocation and API request context in @sailplane/logger
  *
  * This wrapper includes commonly useful middleware. You may further wrap it
  * with your own function that adds additional middleware, or just use it as
@@ -33,6 +34,7 @@ export declare const wrapApiHandlerV1: typeof wrapApiHandler;
  *   API Gateway result.
  * - Catch http-errors exceptions into proper HTTP responses.
  * - Catch other exceptions and return as HTTP 500
+ * - Set Lambda invocation and API request context in @sailplane/logger
  *
  * This wrapper includes commonly useful middleware. You may further wrap it
  * with your own function that adds additional middleware, or just use it as
