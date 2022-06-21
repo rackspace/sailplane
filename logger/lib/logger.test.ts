@@ -63,6 +63,20 @@ describe('Logger', () => {
         });
     });
 
+    test("when set and read log level", () => {
+        // GIVEN
+        Logger = require('./logger').Logger;
+        Logger.initialize({
+            level: LogLevel.DEBUG,
+        });
+        const logger = new Logger("LoggerTest");
+        expect(logger.level).toEqual(LogLevel.DEBUG);
+        // WHEN
+        logger.level = LogLevel.NONE;
+        // THEN
+        expect(logger.level).toEqual(LogLevel.NONE);
+    });
+
     describe('configured for AWS CloudWatch environment', () => {
         beforeEach(() => {
             process.env.LOG_TO_CLOUDWATCH = 'true';
