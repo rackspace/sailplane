@@ -106,6 +106,13 @@ export class Logger {
     }
 
     /**
+     * Change the log level of this Logger
+     */
+    set level(level: LogLevel) {
+        this.config.level = level;
+    }
+
+    /**
      * Log an item at given level.
      * Usually better to use the specific function per log level instead.
      *

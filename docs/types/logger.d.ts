@@ -43,6 +43,10 @@ export declare class Logger {
      */
     get level(): LogLevel;
     /**
+     * Change the log level of this Logger
+     */
+    set level(level: LogLevel);
+    /**
      * Log an item at given level.
      * Usually better to use the specific function per log level instead.
      *
