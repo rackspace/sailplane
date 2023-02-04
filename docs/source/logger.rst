@@ -1,7 +1,8 @@
 Logger
 ======
 
-CloudWatch and local development friendly logger with optional structured logging, while still small and easy to use.
+CloudWatch, web browser, and local development friendly logger with optional structured logging,
+while still small and easy to use.
 
 Overview
 ^^^^^^^^
@@ -90,10 +91,10 @@ CloudWatch detection
 
 The default behaviors of some configuration change depending on whether log output is going
 to CloudWatch vs local console. This is because within the AWS Lambda service, logging to
-stdout is automatically prefixed with the log level and timestamp. Local console does not
+stdout is automatically prefixed with the log level and timestamp. Local console does not.
 So Logger adds these for you when a login shell (offline mode) is detected. You can force
-
-Override from environment variable ``export LOG_TO_CLOUDWATCH=true`` or ``export LOG_TO_CLOUDWATCH=false``
+CloudWatch logging behavior via the
+environment variable ``export LOG_TO_CLOUDWATCH=true`` or ``export LOG_TO_CLOUDWATCH=false``
 
 Note: The above is ignored when using structured logging.
 

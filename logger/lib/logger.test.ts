@@ -34,15 +34,8 @@ describe('Logger', () => {
     let mockError: jest.Mock;
 
     beforeEach(async () => {
-        // Object.assign(process.env, mockEnv);
-        Object.entries(mockEnv).forEach(([key, value]) => {
-            if (value === undefined) {
-                delete process.env[key];
-            }
-            else {
-                process.env[key] = value;
-            }
-        });
+        process.env = {};
+        Object.entries(mockEnv).forEach(([key, value]) =>  process.env[key] = value);
         global.console.debug = mockDebug = jest.fn();
         global.console.info = mockInfo = jest.fn();
         global.console.warn = mockWarn = jest.fn();
@@ -289,6 +282,58 @@ describe('Logger', () => {
 
                 // THEN
                 expect(mockInfo).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe('is in a browser environment', () => {
+        beforeEach(() => {
+            delete process.env;
+            Logger = require('./logger').Logger;
+        });
+
+        describe('debug level with flat output', () => {
+            beforeEach(() => {
+                Logger.initialize({/*defaults*/});
+            });
+
+            test('debug(message) to browser', () => {
+                // GIVEN
+                const logger = new Logger("LoggerTest");
+
+                // WHEN
+                logger.debug('message');
+
+                // THEN
+                expect(mockDebug).toHaveBeenCalledTimes(1);
+                expect(mockDebug).toHaveBeenCalledWith("LoggerTest:", "message");
+            });
+
+            test('debug(message, params) to browser', () => {
+                // GIVEN
+                const logger = new Logger("LoggerTest");
+
+                // WHEN
+                logger.debug('message', 1, true, 'third');
+
+                // THEN
+                expect(mockDebug).toHaveBeenCalledWith(
+                    "LoggerTest:", "message", 1, true, "third"
+                );
+            });
+
+            test('debug(message) to browser when log level is WARN', () => {
+                // GIVEN
+                const logger = new Logger({
+                    module: "LoggerTest",
+                    level: LogLevel.WARN,
+                });
+
+                // WHEN
+                logger.debug('message');
+
+                // THEN
+                expect(mockDebug).not.toHaveBeenCalled();
             });
         });
     });

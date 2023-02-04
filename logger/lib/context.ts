@@ -7,6 +7,7 @@ import type { Context } from 'aws-lambda';
  */
 let processContext: any | undefined;
 let numInvocations = 0;
+const env = globalThis.process?.env ?? {};
 
 function initContext(): void {
     const addIfExists = (name: string, value: string | undefined, notValue?: string) => {
@@ -15,15 +16,15 @@ function initContext(): void {
         }
     };
     processContext = {
-        aws_region: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION,
-        function_name: process.env.AWS_LAMBDA_FUNCTION_NAME,
-        function_memory_size: Number(process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE),
+        aws_region: env.AWS_REGION || env.AWS_DEFAULT_REGION,
+        function_name: env.AWS_LAMBDA_FUNCTION_NAME,
+        function_memory_size: Number(env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE),
     };
-    addIfExists("function_version", process.env.AWS_LAMBDA_FUNCTION_VERSION, "$LATEST");
-    addIfExists("environment", process.env.ENVIRONMENT);
-    addIfExists("stage", process.env.STAGE || process.env.SERVERLESS_STAGE);
+    addIfExists("function_version", env.AWS_LAMBDA_FUNCTION_VERSION, "$LATEST");
+    addIfExists("environment", env.ENVIRONMENT);
+    addIfExists("stage", env.STAGE || env.SERVERLESS_STAGE);
     addIfExists("xray_trace_id",
-        /*xray enabled? */process.env.AWS_XRAY_CONTEXT_MISSING ? process.env._X_AMZN_TRACE_ID : undefined
+        /*xray enabled? */env.AWS_XRAY_CONTEXT_MISSING ? env._X_AMZN_TRACE_ID : undefined
     );
 }
 
