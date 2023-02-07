@@ -25,15 +25,16 @@ const formatterFnMap: Record<LogFormat, FormatterFn> = {
     [LogFormat.STRUCT]: structuredFormatter,
 };
 
+const env = globalThis.process?.env ?? {IS_BROWSER: true};
 // If not running in an interactive shell (such is the case for AWS Lambda environment)
 // or the LOG_TO_CLOUDWATCH environment is set, then format output for CloudWatch.
-const IsCloudWatch = process.env.LOG_TO_CLOUDWATCH ? process.env.LOG_TO_CLOUDWATCH === 'true' : !process.env.SHELL;
-const globalFormat: LogFormat = LogFormat[process.env.LOG_FORMAT!] || (IsCloudWatch ? LogFormat.FLAT : LogFormat.PRETTY);
+const isMinimal = env.IS_BROWSER || (!env.SHELL && env.LOG_TO_CLOUDWATCH !== 'true');
+const globalFormat: LogFormat = LogFormat[env.LOG_FORMAT!] || (isMinimal ? LogFormat.FLAT : LogFormat.PRETTY);
 const globalLoggerConfig: LoggerConfig = {
     module: "global",
-    level: LogLevel[process.env.LOG_LEVEL!] || LogLevel.DEBUG,
-    outputLevels: !IsCloudWatch,
-    logTimestamps: process.env.LOG_TIMESTAMPS ? process.env.LOG_TIMESTAMPS === 'true' : !IsCloudWatch,
+    level: LogLevel[env.LOG_LEVEL!] || LogLevel.DEBUG,
+    outputLevels: !isMinimal,
+    logTimestamps: env.LOG_TIMESTAMPS ? env.LOG_TIMESTAMPS === 'true' : !isMinimal,
     format: globalFormat,
     // @ts-ignore - TS thinks value can't be STRUCT, which is not true
     formatter: formatterFnMap[globalFormat],
