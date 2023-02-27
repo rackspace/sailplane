@@ -13,7 +13,10 @@ export const resolvedPromiseIsSuccessMiddleware = (): middy.MiddlewareObj<APIGat
         if (!response || typeof response !== 'object' || (!response.statusCode && !response.body)) {
             request.response = {
                 statusCode: 200,
-                body: response ? JSON.stringify(response) : ''
+                body: response ? JSON.stringify(response) : '',
+                headers: {
+                    "content-type": response ? "application/json; charset=utf-8" : "text/plain; charset=utf-8"
+                }
             };
         }
     }

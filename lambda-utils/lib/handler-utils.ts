@@ -90,14 +90,17 @@ export function wrapApiHandlerV2(handler: AsyncProxyHandlerV2): AsyncMiddyifedHa
 export function apiSuccess(result?: any): APIGatewayProxyResult {
     return {
         statusCode: 200,
-        body: result ? JSON.stringify(result) : ''
+        body: result ? JSON.stringify(result) : '',
+        headers: {
+            "content-type": result ? "application/json; charset=utf-8" : "text/plain; charset=utf-8"
+        }
     };
 }
 
 /**
  * Construct the object that API Gateway payload format v1 wants back upon a failed run.
  *
- * Often, it is simpler to throw an http-errors exception from your #wrapApiHandler
+ * Often, it is simpler to throw a http-errors exception from your #wrapApiHandler
  * handler.
  *
  * @see https://www.npmjs.com/package/http-errors
@@ -108,7 +111,10 @@ export function apiSuccess(result?: any): APIGatewayProxyResult {
 export function apiFailure(statusCode: number, message?: string): APIGatewayProxyResult {
     const response = {
         statusCode,
-        body: message || ''
+        body: message || '',
+        headers: {
+            "content-type": "text/plain; charset=utf-8"
+        }
     };
 
     logger.warn("Response to API Gateway: ", response);
