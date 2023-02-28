@@ -60,7 +60,7 @@ export declare function apiSuccess(result?: any): APIGatewayProxyResult;
 /**
  * Construct the object that API Gateway payload format v1 wants back upon a failed run.
  *
- * Often, it is simpler to throw an http-errors exception from your #wrapApiHandler
+ * Often, it is simpler to throw a http-errors exception from your #wrapApiHandler
  * handler.
  *
  * @see https://www.npmjs.com/package/http-errors

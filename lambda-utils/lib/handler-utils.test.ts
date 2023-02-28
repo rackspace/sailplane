@@ -49,8 +49,9 @@ describe("LambdaUtils", () => {
 
             // THEN
 
-            // CORS header set in response
+            // Headers set in response
             expect(response.headers?.['Access-Control-Allow-Origin']).toEqual('*');
+            expect(response.headers?.['content-type']).toEqual("application/json; charset=utf-8");
 
             const resultEvent: APIGatewayProxyEvent = JSON.parse(response.body);
 
@@ -113,6 +114,7 @@ describe("LambdaUtils", () => {
             expect(response.statusCode).toEqual(200);
             expect(response.body).toEqual("{\"message\":\"Hello\"}");
             expect(response.headers?.["Access-Control-Allow-Origin"]).toEqual("*");
+            expect(response.headers?.['content-type']).toEqual("application/json; charset=utf-8");
         });
 
         test("wrapApiHandler promise empty success", async () => {
@@ -147,6 +149,7 @@ describe("LambdaUtils", () => {
             expect(response.statusCode).toEqual(200);
             expect(response.body).toBeFalsy();
             expect(response.headers!["Access-Control-Allow-Origin"]).toEqual("*");
+            expect(response.headers?.['content-type']).toEqual("text/plain; charset=utf-8");
         });
 
         test("wrapApiHandler throw Error", async () => {
@@ -161,8 +164,13 @@ describe("LambdaUtils", () => {
             ) as APIGatewayProxyResult;
 
             // THEN
-            expect(response.statusCode).toEqual(500);
-            expect(response.body).toEqual("Error: oops");
+            expect(response).toEqual({
+                statusCode: 500,
+                body: 'Error: oops',
+                headers: {
+                    "content-type": "text/plain; charset=utf-8"
+                }
+            });
         });
 
         test("wrapApiHandlerV2 throw http-error", async () => {
@@ -179,7 +187,37 @@ describe("LambdaUtils", () => {
             // THEN
             expect(response).toEqual({
                 statusCode: 404,
-                body: 'NotFoundError: Not Found'
+                body: 'NotFoundError: Not Found',
+                headers: {
+                    "content-type": "text/plain; charset=utf-8"
+                }
+            });
+        });
+
+        test("wrapApiHandlerV2 throw nested cause http-error", async () => {
+            // GIVEN
+            const handler = LambdaUtils.wrapApiHandlerV2(async (): Promise<APIGatewayProxyStructuredResultV2> => {
+                // The 'cause' option isn't gained until Node 16.9.0, but this library
+                // targets an older version in order to be backward compatible.
+                // So, we fake this.
+                // @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause
+                const error: any = new Error("I'm confused");
+                error.cause = new createError.BadRequest();
+                throw error;
+            });
+
+            // WHEN
+            const response = await handler(
+                {} as unknown as APIGatewayProxyEventV2, mockContext as Context, {} as any
+            ) as APIGatewayProxyResult;
+
+            // THEN
+            expect(response).toEqual({
+                statusCode: 400,
+                body: 'BadRequestError: Bad Request',
+                headers: {
+                    "content-type": "text/plain; charset=utf-8"
+                }
             });
         });
     });
