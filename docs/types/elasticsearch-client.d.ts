@@ -21,13 +21,15 @@ export interface ElasticsearchResult {
     hits?: {
         total: number;
         max_score: number | null;
-        hits?: [{
-            _index: string;
-            _type: string;
-            _id: string;
-            _score: number;
-            _source?: any;
-        }];
+        hits?: [
+            {
+                _index: string;
+                _type: string;
+                _id: string;
+                _score: number;
+                _source?: any;
+            }
+        ];
     };
     deleted?: number;
     failures?: any[];
@@ -38,7 +40,7 @@ export interface ElasticsearchResult {
  * Suggested use with Injector:
  *   Injector.register(ElasticsearchClient, () => {
  *     const endpoint: string = process.env.ES_ENDPOINT!;
- *     logger.info('Connecting to Elasticsearch @ ' + endpoint);
+ *     logger.info("Connecting to Elasticsearch @ " + endpoint);
  *     return new ElasticsearchClient(new AwsHttps(), endpoint);
  *  });
  */
