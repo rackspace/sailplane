@@ -12,9 +12,9 @@ import {Logger} from "@sailplane/logger";
 
 const logger = new Logger('injector');
 
-type InjectableClass<T> = {new (...args): T, $inject?: DependencyList, name: string};
-type GettableClass<T> = Function & {prototype: T, name: string};
-type DependencyList = (InjectableClass<unknown>|string)[];
+export type InjectableClass<T> = {new (...args): T, $inject?: DependencyList, name: string};
+export type GettableClass<T> = Function & {prototype: T, name: string};
+export type DependencyList = (InjectableClass<unknown>|string)[];
 
 /** Convert list into array of dependency names */
 function toNamedDependencies(list: DependencyList): string[] {
