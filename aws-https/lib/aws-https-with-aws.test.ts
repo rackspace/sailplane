@@ -68,7 +68,7 @@ describe('AwsHttps with AWS', () => {
             headers: {'Content-Type': 'application/json'}
         };
         const response = {success: true};
-        let scope;
+        let scope: nock.Scope;
 
         beforeEach(() => {
             scope = nock(serverUrl, {
