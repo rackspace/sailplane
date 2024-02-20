@@ -59,7 +59,7 @@ export class Logger {
      */
     static initialize(globalConfig: Partial<LoggerConfig>): void {
         Object.assign(globalLoggerConfig, globalConfig);
-        globalLoggerConfig.formatter = formatterFnMap[globalLoggerConfig.format];
+        globalLoggerConfig.formatter = globalConfig.formatter ?? formatterFnMap[globalLoggerConfig.format];
     }
 
     /**
@@ -90,9 +90,9 @@ export class Logger {
      */
     constructor(ops: string | Partial<LoggerConfig>) {
         if (typeof ops === "string") {
-            this.config = {...globalLoggerConfig, attributes: undefined, module: ops};
+            this.config = {...globalLoggerConfig, attributes: undefined, attributesCallback: undefined, module: ops};
         } else {
-            this.config = {...globalLoggerConfig, attributes: undefined, ...ops};
+            this.config = {...globalLoggerConfig, attributes: undefined, attributesCallback: undefined, ...ops};
             if (ops.format && !ops.formatter) {
                 this.config.formatter = formatterFnMap[ops.format];
             }

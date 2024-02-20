@@ -1,5 +1,5 @@
-import { FormatterFn, LogFormat, LoggerConfig, LogLevel } from "./common";
-import { jsonStringify } from "./json-stringify";
+import {FormatterFn, LogFormat, LoggerConfig, LogLevel} from "./common";
+import {jsonStringify} from "./json-stringify";
 
 /**
  * Format a log line in flat or pretty format.
@@ -27,8 +27,16 @@ export const flatFormatter: FormatterFn = (
         out.push(LogLevel[level]);
     }
 
-    out.push(loggerConfig.module + ':');
+    out.push(loggerConfig.module);
+
+    out.push(...Object.values({
+        ...(globalConfig.attributesCallback?.()),
+        ...(loggerConfig.attributesCallback?.()),
+    }));
+
+    out[out.length - 1] += ":";
     out.push(message);
+
     if (params.length) {
         const indent = loggerConfig.format === LogFormat.PRETTY ? 2 : undefined;
         for (const param of params) {

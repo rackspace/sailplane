@@ -1,5 +1,5 @@
-import { LogFormat, LogLevel } from './common';
-import type { Context } from "aws-lambda";
+import {LogFormat, LogLevel} from './common';
+import type {Context} from "aws-lambda";
 
 const mockEnv = {
     ...process.env,
@@ -35,7 +35,7 @@ describe('Logger', () => {
 
     beforeEach(async () => {
         process.env = {};
-        Object.entries(mockEnv).forEach(([key, value]) =>  process.env[key] = value);
+        Object.entries(mockEnv).forEach(([key, value]) => process.env[key] = value);
         global.console.debug = mockDebug = jest.fn();
         global.console.info = mockInfo = jest.fn();
         global.console.warn = mockWarn = jest.fn();
@@ -88,6 +88,26 @@ describe('Logger', () => {
                     logTimestamps: false,
                     format: LogFormat.FLAT,
                 });
+            });
+
+            test("with various attributes provided", () => {
+                // GIVEN
+                Logger.initialize({
+                    attributes: {correlation_id: "876", scope: "global"}, // ignored
+                    attributesCallback: () => ({"loopback": 127, state: "active"}),
+                });
+                const logger = new Logger({
+                    module: "LoggerTest",
+                    attributes: {log_id: "123", scope: "local"}, // ignored
+                    attributesCallback: () => ({state: "inactive"})
+                });
+
+                // WHEN
+                logger.debug('text');
+
+                // THEN
+                expect(mockDebug).toHaveBeenCalledTimes(1);
+                expect(mockDebug).toHaveBeenCalledWith("LoggerTest", 127, "inactive:", "text");
             });
 
             test('debug(message) to CloudWatch', () => {
@@ -171,10 +191,49 @@ describe('Logger', () => {
                 Logger.setLambdaContext(mockContext);
             });
 
+            test("with various attributes provided", () => {
+                // GIVEN
+                Logger.initialize({
+                    attributesCallback: () => ({"live_id": "live"}),
+                    attributes: {correlation_id: "876", scope: "global"},
+                });
+                const logger = new Logger({
+                    module: "LoggerTest",
+                    attributes: {log_id: "123", scope: "local"},
+                    attributesCallback: () => ({"loopback": 127})
+                });
+
+                // WHEN
+                logger.info('text');
+
+                // THEN
+                expect(mockInfo).toHaveBeenCalledWith(expect.any(String));
+                expect(JSON.parse(mockInfo.mock.calls[0][0])).toEqual({
+                    aws_region: mockEnv.AWS_REGION,
+                    function_name: mockEnv.AWS_LAMBDA_FUNCTION_NAME,
+                    function_version: mockEnv.AWS_LAMBDA_FUNCTION_VERSION,
+                    function_memory_size: 128,
+                    stage: mockEnv.SERVERLESS_STAGE,
+                    xray_trace_id: "xray-123",
+                    aws_request_id: "aws-request-123",
+                    level: "INFO",
+                    message: "text",
+                    module: "LoggerTest",
+                    timestamp: expect.stringMatching(timestampRegEx),
+                    // added attributes:
+                    invocation_num: 1,
+                    correlation_id: "876",
+                    "live_id": "live",
+                    scope: "local",
+                    log_id: "123",
+                    loopback: 127,
+                });
+            });
+
             test('info(message) to CloudWatch', () => {
                 // GIVEN
                 Logger.addAttributes({correlation_id: "876"});
-                const logger = new Logger({ module: "LoggerTest" });
+                const logger = new Logger({module: "LoggerTest"});
 
                 // WHEN
                 logger.info('text');
@@ -200,7 +259,7 @@ describe('Logger', () => {
 
             test('info(message, params) to CloudWatch', () => {
                 // GIVEN
-                const logger = new Logger({ module: "LoggerTest", format: LogFormat.STRUCT });
+                const logger = new Logger({module: "LoggerTest", format: LogFormat.STRUCT});
 
                 // WHEN
                 logger.info('text', 1, true, new TypeError("third"));
@@ -248,7 +307,7 @@ describe('Logger', () => {
             test('infoObject(message, object) to CloudWatch', () => {
                 // GIVEN
                 const obj = {message: "I'm a teapot", statusCode: 418};
-                const logger = new Logger({ module: "LoggerTest", format: LogFormat.STRUCT });
+                const logger = new Logger({module: "LoggerTest", format: LogFormat.STRUCT});
                 expect(logger.level).toEqual(LogLevel.DEBUG);
 
                 // WHEN
@@ -288,7 +347,7 @@ describe('Logger', () => {
 
     describe('is in a browser environment', () => {
         beforeEach(() => {
-            delete process.env;
+            delete (process as any).env;
             Logger = require('./logger').Logger;
         });
 
@@ -437,8 +496,8 @@ describe('Logger', () => {
             test('error(message, params) to console', () => {
                 // GIVEN
                 const logger = new Logger("LoggerTest");
-                const cyclicObject = { items: [] as any[] };
-                cyclicObject.items.push({ value: 2, parent: cyclicObject });
+                const cyclicObject = {items: [] as any[]};
+                cyclicObject.items.push({value: 2, parent: cyclicObject});
 
                 // WHEN
                 logger.error('message', "wow", cyclicObject, new Error("cause"));
