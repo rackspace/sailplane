@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/logger",
-  "version": "4.2.0",
+  "version": "5.0.0",
   "description": "CloudWatch and serverless-offline friendly logger.",
   "keywords": [
     "aws",
@@ -26,13 +26,13 @@
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.93",
-    "@types/jest": "^26.0.24",
-    "@types/node": "^12.20.19",
-    "jest": "^26.6.3",
-    "ts-jest": "^26.5.6",
-    "ts-node": "^10.2.0",
-    "typescript": "3.8.x"
+    "@types/aws-lambda": "^8.10.133",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^18.19.17",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "4.9.x"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
