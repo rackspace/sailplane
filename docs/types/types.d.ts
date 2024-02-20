@@ -21,7 +21,7 @@ export interface APIGatewayProxyEvent extends AWS_APIGatewayProxyEvent {
         [name: string]: string;
     };
 }
-export declare type APIGatewayProxyEventV1 = APIGatewayProxyEvent;
+export type APIGatewayProxyEventV1 = APIGatewayProxyEvent;
 /**
  * Casted interface for APIGatewayProxyEventsV2 as converted through the middleware
  */
@@ -43,13 +43,13 @@ export interface APIGatewayProxyEventV2 extends AWS_APIGatewayProxyEventV2 {
         [name: string]: string;
     };
 }
-export declare type APIGatewayProxyEventAnyVersion = AWS_APIGatewayProxyEvent | APIGatewayProxyEvent | AWS_APIGatewayProxyEventV2 | APIGatewayProxyEventV2;
-export declare type APIGatewayProxyResultAnyVersion = APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
+export type APIGatewayProxyEventAnyVersion = AWS_APIGatewayProxyEvent | APIGatewayProxyEvent | AWS_APIGatewayProxyEventV2 | APIGatewayProxyEventV2;
+export type APIGatewayProxyResultAnyVersion = APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
 /** LambdaUtils version of ProxyHandler for API Gateway v1 payload format */
-export declare type AsyncProxyHandlerV1 = (event: APIGatewayProxyEvent, context: Context, callback?: Callback<APIGatewayProxyResult>) => Promise<APIGatewayProxyResult | object | void>;
+export type AsyncProxyHandlerV1 = (event: APIGatewayProxyEvent, context: Context, callback?: Callback<APIGatewayProxyResult>) => Promise<APIGatewayProxyResult | object | void>;
 /** LambdaUtils version of an API Gateway v1 payload handler wrapped with middy */
-export declare type AsyncMiddyifedHandlerV1 = middy.MiddyfiedHandler<AWS_APIGatewayProxyEvent, APIGatewayProxyResult | object | void>;
+export type AsyncMiddyifedHandlerV1 = middy.MiddyfiedHandler<AWS_APIGatewayProxyEvent, APIGatewayProxyResult | object | void>;
 /** LambdaUtils version of ProxyHandler for API Gateway v2 payload format */
-export declare type AsyncProxyHandlerV2 = (event: APIGatewayProxyEventV2, context: Context, callback?: Callback<APIGatewayProxyStructuredResultV2>) => Promise<APIGatewayProxyStructuredResultV2 | object | void>;
+export type AsyncProxyHandlerV2 = (event: APIGatewayProxyEventV2, context: Context, callback?: Callback<APIGatewayProxyStructuredResultV2>) => Promise<APIGatewayProxyStructuredResultV2 | object | void>;
 /** LambdaUtils version of an API Gateway v12payload handler wrapped with middy */
-export declare type AsyncMiddyifedHandlerV2 = middy.MiddyfiedHandler<AWS_APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 | object | void>;
+export type AsyncMiddyifedHandlerV2 = middy.MiddyfiedHandler<AWS_APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 | object | void>;

@@ -47,7 +47,16 @@ or use it as an example to write your own, to add more middleware!
 Install
 ^^^^^^^
 
-**To use LambdaUtils v4.x with Middy v2.x.x (latest):**
+**To use LambdaUtils v6.x with Middy v4.x.x (latest):**
+
+.. code-block:: shell
+
+    npm install @sailplane/lambda-utils@6 @sailplane/logger @middy/core@4 @middy/http-cors@4 @middy/http-event-normalizer@4 @middy/http-header-normalizer@4 @middy/http-json-body-parser@4
+
+The extra @middy/ middleware packages are optional if you write your own wrapper function that does not use them.
+See below.
+
+**To use LambdaUtils v4.x or v5.x with Middy v2.x.x:**
 
 .. code-block:: shell
 
@@ -76,7 +85,7 @@ Upgrading
 
 To upgrade from older versions of lambda-utils, remove the old lambda-utils and middy dependencies
 and then follow the install instructions above to install the latest. See also the
-`Middy upgrade instructions <https://github.com/middyjs/middy/blob/main/docs/UPGRADE.md>`_.
+`Middy upgrade instructions <https://middy.js.org/docs/category/upgrade>`_.
 
 Structured Logging Attributes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

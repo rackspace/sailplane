@@ -9,7 +9,7 @@ import {APIGatewayProxyEventAnyVersion, APIGatewayProxyResultAnyVersion} from ".
 export const resolvedPromiseIsSuccessMiddleware = (): middy.MiddlewareObj<APIGatewayProxyEventAnyVersion, APIGatewayProxyResultAnyVersion> => ({
     after: async (request) => {
         // If response isn't a proper API result object, convert it into one.
-        let response = request.response;
+        const response = request.response;
         if (!response || typeof response !== 'object' || (!response.statusCode && !response.body)) {
             request.response = {
                 statusCode: 200,

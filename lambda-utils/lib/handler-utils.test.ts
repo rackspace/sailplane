@@ -15,6 +15,57 @@ const mockContext: Partial<Context> = {
     awsRequestId: "aws-request-123",
 };
 
+const givenBody = { company: "Onica", tagline: "Innovation through Cloud Transformation" };
+const givenV1Event: APIGatewayProxyEvent = {
+    body: JSON.stringify(givenBody),
+    headers: {
+        "content-length": "0",
+        "CONTENT-TYPE": "application/json"
+    },
+    multiValueHeaders: {},
+    httpMethod: "GET",
+    isBase64Encoded: false,
+    path: "/test",
+    pathParameters: null,
+    queryStringParameters: null,
+    multiValueQueryStringParameters: null,
+    stageVariables: null,
+    resource: "tada",
+    requestContext: {} as any
+};
+
+const givenV2Event: APIGatewayProxyEventV2 = {
+    version: "2.0",
+    routeKey: "123",
+    body: undefined,
+    headers: {
+        Origin: "test-origin"
+    },
+    rawPath: "/test",
+    rawQueryString: "",
+    isBase64Encoded: false,
+    pathParameters: undefined,
+    queryStringParameters: undefined,
+    requestContext: {
+        accountId: "123",
+        apiId: "abc",
+        domainName: "test",
+        domainPrefix: "unit",
+        http: {
+            method: "get",
+            path: "/test",
+            protocol: "http",
+            sourceIp: "1.1.1.1",
+            userAgent: "unit/test"
+        },
+        requestId: "abc",
+        routeKey: "123",
+        stage: "test",
+        time: "2021-08-30T16:58:31Z",
+        timeEpoch: 1000000
+    }
+};
+
 describe("LambdaUtils", () => {
     describe("wrapApiHandler", () => {
 
@@ -25,27 +76,8 @@ describe("LambdaUtils", () => {
                 return LambdaUtils.apiSuccess(event);
             });
 
-            const body = { company: "Onica", tagline: "Innovation through Cloud Transformation" };
-            const givenEvent: APIGatewayProxyEvent = {
-                body: JSON.stringify(body),
-                headers: {
-                    "content-length": "0",
-                    "CONTENT-TYPE": "application/json"
-                },
-                multiValueHeaders: {},
-                httpMethod: "GET",
-                isBase64Encoded: false,
-                path: "/test",
-                pathParameters: null,
-                queryStringParameters: null,
-                multiValueQueryStringParameters: null,
-                stageVariables: null,
-                resource: "tada",
-                requestContext: {} as any
-            };
-
             // WHEN
-            const response = await handler(givenEvent, mockContext as Context, {} as any) as APIGatewayProxyResult;
+            const response = await handler({...givenV1Event}, mockContext as Context, {} as any) as APIGatewayProxyResult;
 
             // THEN
 
@@ -56,7 +88,7 @@ describe("LambdaUtils", () => {
             const resultEvent: APIGatewayProxyEvent = JSON.parse(response.body);
 
             // body was parsed from string to JSON in request event
-            expect(resultEvent.body).toEqual(body);
+            expect(resultEvent.body).toEqual(givenBody);
 
             // Headers are normalized in request event
             expect(resultEvent.headers['Content-Length']).toBeUndefined();
@@ -75,40 +107,8 @@ describe("LambdaUtils", () => {
                 return {message: 'Hello'};
             });
 
-            const givenEvent: APIGatewayProxyEventV2 = {
-                version: "2",
-                routeKey: "123",
-                body: undefined,
-                headers: {
-                    Origin: "test-origin"
-                },
-                rawPath: "/test",
-                rawQueryString: "",
-                isBase64Encoded: false,
-                pathParameters: undefined,
-                queryStringParameters: undefined,
-                requestContext: {
-                    accountId: "123",
-                    apiId: "abc",
-                    domainName: "test",
-                    domainPrefix: "unit",
-                    http: {
-                        method: "get",
-                        path: "/test",
-                        protocol: "http",
-                        sourceIp: "1.1.1.1",
-                        userAgent: "unit/test"
-                    },
-                    requestId: "abc",
-                    routeKey: "123",
-                    stage: "test",
-                    time: "2021-08-30T16:58:31Z",
-                    timeEpoch: 1000000
-                }
-            };
-
             // WHEN
-            const response = await handler(givenEvent, mockContext as Context, {} as any) as APIGatewayProxyResultV2<any>;
+            const response = await handler({...givenV2Event}, mockContext as Context, {} as any) as APIGatewayProxyResultV2<any>;
 
             // THEN
             expect(response.statusCode).toEqual(200);
@@ -160,9 +160,10 @@ describe("LambdaUtils", () => {
 
             // WHEN
             const response = await handler(
-                {} as unknown as APIGatewayProxyEvent, {} as Context, {} as any
+                {...givenV1Event}, {} as Context, {} as any
             ) as APIGatewayProxyResult;
 
+            console.log(response);
             // THEN
             expect(response).toEqual({
                 statusCode: 500,
@@ -181,7 +182,7 @@ describe("LambdaUtils", () => {
 
             // WHEN
             const response = await handler(
-                {} as unknown as APIGatewayProxyEventV2, mockContext as Context, {} as any
+                {...givenV2Event}, mockContext as Context, {} as any
             ) as APIGatewayProxyResult;
 
             // THEN
@@ -208,7 +209,7 @@ describe("LambdaUtils", () => {
 
             // WHEN
             const response = await handler(
-                {} as unknown as APIGatewayProxyEventV2, mockContext as Context, {} as any
+                {...givenV2Event}, mockContext as Context, {} as any
             ) as APIGatewayProxyResult;
 
             // THEN

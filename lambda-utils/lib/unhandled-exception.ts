@@ -18,7 +18,7 @@ export const unhandledExceptionMiddleware = (): middy.MiddlewareObj<APIGatewayPr
         /* istanbul ignore else - nominal path is for response to be brand new */
         if ((request.response.statusCode || 0) < 400) {
             const error = findRootCause(request.error);
-            request.response.statusCode = error?.statusCode || 500;
+            request.response.statusCode = (error as ErrorWithStatus)?.statusCode || 500;
             request.response.body = error?.toString() ?? '';
             request.response.headers = request.response.headers ?? {};
             request.response.headers["content-type"] = "text/plain; charset=utf-8";
@@ -28,15 +28,14 @@ export const unhandledExceptionMiddleware = (): middy.MiddlewareObj<APIGatewayPr
     }
 });
 
-type ErrorWithStatusAndCause =
-    Error
-    & { statusCode?: number, cause?: ErrorWithStatusAndCause };
+type ErrorWithStatus = Error & { statusCode?: number };
 
-function findRootCause(error: ErrorWithStatusAndCause | null): ErrorWithStatusAndCause | null {
-    if (error?.statusCode && error.statusCode >= 400) {
-        return error;
-    } else if (error?.cause) {
-        return findRootCause(error.cause);
+function findRootCause(error: unknown | null | undefined): ErrorWithStatus | Error | unknown | null | undefined {
+    const errorWithStatus = error as ErrorWithStatus;
+    if (errorWithStatus?.statusCode && errorWithStatus.statusCode >= 400) {
+        return error as ErrorWithStatus;
+    } else if (errorWithStatus?.cause) {
+        return findRootCause(errorWithStatus.cause);
     } else {
         return error;
     }
