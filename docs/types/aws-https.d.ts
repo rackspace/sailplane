@@ -1,13 +1,13 @@
 /// <reference types="node" />
 import { Credentials, CredentialsOptions } from "aws-sdk/lib/credentials";
-import * as https from "https";
+import * as aws4 from 'aws4';
 import { URL } from "url";
 /**
  * Same options as https://nodejs.org/api/http.html#http_http_request_options_callback
  * with the addition of optional body to send with POST, PUT, or PATCH
  * and option to AWS Sig4 sign the request.
  */
-export declare type AwsHttpsOptions = https.RequestOptions & {
+export type AwsHttpsOptions = aws4.Request & {
     /** Body content of HTTP POST, PUT or PATCH */
     body?: string;
     /** If true, apply AWS Signature v4 to the request */

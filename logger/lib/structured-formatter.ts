@@ -22,7 +22,9 @@ export const structuredFormatter: FormatterFn = (
     const item = {
         ...getContext(),
         ...globalConfig.attributes,
+        ...(globalConfig.attributesCallback?.()),
         ...loggerConfig.attributes,
+        ...(loggerConfig.attributesCallback?.()),
         level: LogLevel[level],
         module: loggerConfig.module,
         timestamp: new Date().toISOString(),

@@ -5,7 +5,7 @@ describe('StateStorage', () => {
     const mockSSMClient = {
         send: jest.fn()
     };
-    let sut;
+    let sut: StateStorage;
 
     describe('#set', () => {
         beforeEach(() => {

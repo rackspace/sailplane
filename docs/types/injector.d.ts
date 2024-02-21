@@ -8,16 +8,16 @@
  */
 import "reflect-metadata";
 import * as Bottle from 'bottlejs';
-declare type InjectableClass<T> = {
+export type InjectableClass<T> = {
     new (...args: any[]): T;
     $inject?: DependencyList;
     name: string;
 };
-declare type GettableClass<T> = Function & {
+export type GettableClass<T> = Function & {
     prototype: T;
     name: string;
 };
-declare type DependencyList = (InjectableClass<unknown> | string)[];
+export type DependencyList = (InjectableClass<unknown> | string)[];
 /**
  * Wraps up type-safe version of BottleJs for common uses.
  *
@@ -158,4 +158,3 @@ export interface InjectableOptions<T> {
  *   }
  */
 export declare function Injectable<T>(options?: InjectableOptions<T>): (target: InjectableClass<unknown>) => void;
-export {};

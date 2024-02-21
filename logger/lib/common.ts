@@ -6,7 +6,7 @@ export enum LogFormat {
     FLAT = 1, PRETTY, STRUCT
 }
 
-export type LoggerAttributes = Record<string, string | number>;
+export type LoggerAttributes = Record<string, string | number | undefined>;
 
 /**
  * Signature of a Formatter function.
@@ -48,6 +48,12 @@ export interface LoggerConfig {
 
     /** Any additional context attributes to include with _structured_ format (only). */
     attributes?: LoggerAttributes;
+
+    /**
+     * Callback on every output to get real-time attributes.
+     * With FLAT and PRETTY log formats, only the values (not keys) are output.
+     */
+    attributesCallback?: () => LoggerAttributes;
 
     /**
      * Include the level in log output?

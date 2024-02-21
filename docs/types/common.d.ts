@@ -10,7 +10,7 @@ export declare enum LogFormat {
     PRETTY = 2,
     STRUCT = 3
 }
-export declare type LoggerAttributes = Record<string, string | number>;
+export type LoggerAttributes = Record<string, string | number | undefined>;
 /**
  * Signature of a Formatter function.
  * @param loggerConfig configuration of Logger instance
@@ -20,7 +20,7 @@ export declare type LoggerAttributes = Record<string, string | number>;
  * @param params A list of JavaScript objects to output.
  * @return array to pass to a console function
  */
-export declare type FormatterFn = (loggerConfig: LoggerConfig, globalConfig: LoggerConfig, level: LogLevel, message: string, params: any[]) => any[];
+export type FormatterFn = (loggerConfig: LoggerConfig, globalConfig: LoggerConfig, level: LogLevel, message: string, params: any[]) => any[];
 /**
  * Configuration of a Logger.
  * See individual properties for details.
@@ -42,6 +42,11 @@ export interface LoggerConfig {
     level: LogLevel;
     /** Any additional context attributes to include with _structured_ format (only). */
     attributes?: LoggerAttributes;
+    /**
+     * Callback on every output to get real-time attributes.
+     * With FLAT and PRETTY log formats, only the values (not keys) are output.
+     */
+    attributesCallback?: () => LoggerAttributes;
     /**
      * Include the level in log output?
      * Defaults to true if not streaming to CloudWatch;

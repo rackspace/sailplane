@@ -13,7 +13,7 @@ const logger = new Logger('aws-https');
  * with the addition of optional body to send with POST, PUT, or PATCH
  * and option to AWS Sig4 sign the request.
  */
-export type AwsHttpsOptions = https.RequestOptions & {
+export type AwsHttpsOptions = aws4.Request & {
     /** Body content of HTTP POST, PUT or PATCH */
     body?: string,
 
@@ -26,7 +26,7 @@ export type AwsHttpsOptions = https.RequestOptions & {
  */
 export class AwsHttps {
     /** Resolves when credentials are available - shared by all instances */
-    private static credentialsInitializedPromise: Promise<void>|undefined = undefined;
+    private static credentialsInitializedPromise: Promise<void> | undefined = undefined;
 
     /** Credentials to use in this instance */
     private awsCredentials?: Credentials | CredentialsOptions;
@@ -67,10 +67,10 @@ export class AwsHttps {
             requestOptions = await this.awsSign(requestOptions);
         }
 
-        this.verbose === true && logger.debugObject('HTTPS Request: ', requestOptions);
+        this.verbose === true && logger.debug('HTTPS Request: ', requestOptions);
 
-        return new Promise<any|null>((resolve, reject) => {
-            let timeoutHandle: any|undefined;
+        return new Promise<any | null>((resolve, reject) => {
+            let timeoutHandle: any | undefined;
             const request = https.request(requestOptions, (response: http.IncomingMessage) => {
                 this.verbose !== false && logger.info("Status: " + response.statusCode);
 
@@ -88,21 +88,18 @@ export class AwsHttps {
                         // HTTP status indicates failure. Throw http-errors compatible error.
                         const err: any = new Error('Failed to load content, status code: ' + response.statusCode);
                         err.status = err.statusCode = response.statusCode || 0;
-                        this.verbose !== false && logger.warnObject(err.message + " ", content);
+                        this.verbose !== false && logger.warn(err.message + " ", content);
                         reject(err);
-                    }
-                    else if (content) {
+                    } else if (content) {
                         this.verbose === true && logger.debug("HTTP response content: " + content);
                         try {
                             resolve(JSON.parse(content));
-                        }
-                        catch (err) {
-                            logger.warnObject(err.message, content);
+                        } catch (err) {
+                            logger.warn(err.message, content);
                             err.status = err.statusCode = 400;
                             reject(err);
                         }
-                    }
-                    else {
+                    } else {
                         this.verbose === true && logger.debug("HTTP response " + response.statusCode);
                         resolve(null);
                     }
@@ -113,7 +110,7 @@ export class AwsHttps {
                 /* istanbul ignore next */
                 response.on('timeout', () => {
                     logger.warn(`Request timeout from ${options.protocol}://${options.hostname}:${options.port}`);
-                    request.abort();
+                    request.destroy();
                 });
             });
 
@@ -121,8 +118,8 @@ export class AwsHttps {
             // aren't reliable across various Node.js versions, so timing out this way.
             timeoutHandle = setTimeout(() => {
                 logger.warn(`Request timeout from ${options.protocol}://${options.hostname}:${options.port}`);
-                request.abort();
-            }, options.timeout||120000);
+                request.destroy();
+            }, options.timeout || 120000);
 
             // Connection error
             request.on('error', (err) => {
@@ -145,12 +142,10 @@ export class AwsHttps {
      * @param connectTimeout (default 5000) milliseconds to wait for connection to establish
      * @returns an AwsHttpsOptions object, which may be further modified before use.
      */
-    buildOptions(method: 'DELETE'|'GET'|'HEAD'|'OPTIONS'|'POST'|'PUT'|'PATCH',
+    buildOptions(method: 'DELETE' | 'GET' | 'HEAD' | 'OPTIONS' | 'POST' | 'PUT' | 'PATCH',
                  url: URL,
                  connectTimeout = 5000): AwsHttpsOptions {
-
-        // noinspection UnnecessaryLocalVariableJS
-        const request:  https.RequestOptions = {
+        return {
             protocol: url.protocol,
             method: method,
             hostname: url.hostname,
@@ -158,8 +153,6 @@ export class AwsHttps {
             path: url.pathname + (url.search || ''),
             timeout: connectTimeout
         };
-
-        return request;
     }
 
 
@@ -177,8 +170,7 @@ export class AwsHttps {
                         if (err) {
                             logger.error("Unable to load AWS credentials", err);
                             reject(err);
-                        }
-                        else {
+                        } else {
                             resolve();
                         }
                     });
@@ -196,6 +188,13 @@ export class AwsHttps {
             secretAccessKey: this.awsCredentials.secretAccessKey,
             sessionToken: this.awsCredentials.sessionToken
         };
-        return aws4.sign(request, signCreds);
+        const awsRequest = aws4.sign(
+            {...request, host: request.host ?? undefined},
+            signCreds
+        );
+        return {
+            ...awsRequest,
+            body: awsRequest.body?.toString()
+        }
     }
 }

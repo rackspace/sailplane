@@ -14,7 +14,7 @@ export const loggerContextMiddleware = (): middy.MiddlewareObj<APIGatewayProxyEv
             const requestContext = request.event.requestContext;
             const claims =
                 (requestContext as APIGatewayEventRequestContextWithAuthorizer<any>)?.authorizer?.claims // API v1
-                || (requestContext?.authorizer?.jwt?.claims); // API v2
+                || ((requestContext as any)?.authorizer?.jwt?.claims); // API v2
 
             const context = {
                 api_request_id: requestContext?.requestId,

@@ -50,7 +50,7 @@ export interface ElasticsearchResult {
  * Suggested use with Injector:
  *   Injector.register(ElasticsearchClient, () => {
  *     const endpoint: string = process.env.ES_ENDPOINT!;
- *     logger.info('Connecting to Elasticsearch @ ' + endpoint);
+ *     logger.info("Connecting to Elasticsearch @ " + endpoint);
  *     return new ElasticsearchClient(new AwsHttps(), endpoint);
  *  });
  */

@@ -15,7 +15,7 @@ If you are transpiling, be sure to enable source maps
 (in `Typescript <https://www.typescriptlang.org/docs/handbook/compiler-options.html>`_,
 `Babel <https://babeljs.io/docs/en/options#source-map-options>`_) and the enable use via the
 `source-map-support <https://www.npmjs.com/package/source-map-support>`_ library or
-`Node.js enable-source-maps option <https://nodejs.org/dist/latest-v14.x/docs/api/cli.html#cli_enable_source_maps>`_
+`Node.js enable-source-maps option <https://nodejs.org/dist/latest-v18.x/docs/api/cli.html#--enable-source-maps>`_
 so that you get meaningful stack traces.
 
 Install
