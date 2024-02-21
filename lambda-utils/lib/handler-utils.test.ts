@@ -163,7 +163,6 @@ describe("LambdaUtils", () => {
                 {...givenV1Event}, {} as Context, {} as any
             ) as APIGatewayProxyResult;
 
-            console.log(response);
             // THEN
             expect(response).toEqual({
                 statusCode: 500,
