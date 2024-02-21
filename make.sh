@@ -17,7 +17,7 @@ if [[ $COMMAND == clean || $COMMAND == all ]]; then
       echo
       pushd $DIR || exit $?
       rm -rf node_modules
-      popd
+      popd || exit $?
     done
 fi
 
@@ -30,18 +30,18 @@ if [[ $COMMAND == build || $COMMAND == all ]]; then
       echo
       pushd $DIR || exit $?
       ( npm install && npm run test && npm run build) || exit $?
-      popd
+      popd || exit $?
     done
 
     if [[ -z "$RTD_BUILD" ]]; then
         echo
         echo "***** Build documentation: docs"
         echo
-        pushd docs
+        pushd docs || exit $?
         make html || exit $?
-        popd
+        popd || exit $?
     else
-        echo "(skiping documentation build in ReadTheDocs)"
+        echo "(skipping documentation build in ReadTheDocs)"
     fi
 fi
 
@@ -51,7 +51,7 @@ if [[ $COMMAND == check || $COMMAND == publish || $COMMAND == all ]]; then
       pushd $DIR || exit $?
       NAME=$(cat package.json |jq .name|tr -d '"')
       VER=$(cat package.json |jq .version|tr -d '"')
-      if [[ -z "$(npm info ${NAME}@${VER} version)" ]]; then
+      if [[ -z "$(npm info ${NAME}@${VER} version 2>/dev/null)" ]]; then
           echo
           echo "***** Publish: ${NAME}@${VER}"
           echo
@@ -63,7 +63,7 @@ if [[ $COMMAND == check || $COMMAND == publish || $COMMAND == all ]]; then
           echo "***** Already Exists: ${NAME}@${VER}"
           echo
       fi
-      popd
+      popd || exit $?
     done
 fi
 

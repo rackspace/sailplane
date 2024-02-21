@@ -71,13 +71,13 @@ export const wrapApiHandlerV1 = wrapApiHandler;
  */
 export function wrapApiHandlerV2(handler: AsyncProxyHandlerV2): AsyncMiddyifedHandlerV2 {
     return middy(handler)
+        .use(cors())
+        .use(resolvedPromiseIsSuccessMiddleware())
         .use(unhandledExceptionMiddleware())
         .use(loggerContextMiddleware())
         .use(httpEventNormalizer())
         .use(httpHeaderNormalizer())
-        .use(httpJsonBodyParser())
-        .use(cors())
-        .use(resolvedPromiseIsSuccessMiddleware());
+        .use(httpJsonBodyParser());
 }
 
 /**
