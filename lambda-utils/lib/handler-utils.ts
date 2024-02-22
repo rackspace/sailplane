@@ -38,13 +38,13 @@ const logger = new Logger('lambda-utils');
  */
 export function wrapApiHandler(handler: AsyncProxyHandlerV1): AsyncMiddyifedHandlerV1 {
     return middy(handler)
+        .use(cors())
+        .use(resolvedPromiseIsSuccessMiddleware())
         .use(unhandledExceptionMiddleware())
         .use(loggerContextMiddleware())
         .use(httpEventNormalizer())
         .use(httpHeaderNormalizer())
-        .use(httpJsonBodyParser())
-        .use(cors())
-        .use(resolvedPromiseIsSuccessMiddleware());
+        .use(httpJsonBodyParser());
 }
 export const wrapApiHandlerV1 = wrapApiHandler;
 
