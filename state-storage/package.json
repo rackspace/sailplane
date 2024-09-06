@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/state-storage",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Serverless state and configuration storage",
   "keywords": [
     "aws",
@@ -18,11 +18,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/onicagroup/sailplane.git"
+    "url": "https://github.com/rackspace/sailplane.git"
   },
   "license": "Apache-2.0",
-  "author": "Onica Group",
-  "homepage": "https://docs.onica.com/projects/sailplane",
+  "author": "Rackspace Technology",
+  "homepage": "https://github.com/rackspace/sailplane",
   "contributors": [
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],

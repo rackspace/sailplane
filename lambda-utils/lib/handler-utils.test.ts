@@ -168,6 +168,7 @@ describe("LambdaUtils", () => {
                 statusCode: 500,
                 body: 'Error: oops',
                 headers: {
+                    "Access-Control-Allow-Origin": "*",
                     "content-type": "text/plain; charset=utf-8"
                 }
             });
@@ -189,6 +190,7 @@ describe("LambdaUtils", () => {
                 statusCode: 404,
                 body: 'NotFoundError: Not Found',
                 headers: {
+                    "Access-Control-Allow-Origin": "*",
                     "content-type": "text/plain; charset=utf-8"
                 }
             });
@@ -216,6 +218,7 @@ describe("LambdaUtils", () => {
                 statusCode: 400,
                 body: 'BadRequestError: Bad Request',
                 headers: {
+                    "Access-Control-Allow-Origin": "*",
                     "content-type": "text/plain; charset=utf-8"
                 }
             });

@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/elasticsearch-client",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Dead simple client for AWS managed Elasticsearch.",
   "keywords": [
     "aws",
@@ -15,11 +15,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/onicagroup/sailplane.git"
+    "url": "https://github.com/rackspace/sailplane.git"
   },
   "license": "Apache-2.0",
-  "author": "Onica Group",
-  "homepage": "https://docs.onica.com/projects/sailplane",
+  "author": "Rackspace Technology",
+  "homepage": "https://github.com/rackspace/sailplane",
   "contributors": [
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],
