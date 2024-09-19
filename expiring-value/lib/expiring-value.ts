@@ -4,7 +4,7 @@
  */
 export class ExpiringValue<T> {
     /** Cached value */
-    private value: Promise<T>|undefined;
+    private value: Promise<T> | undefined;
 
     /** Epoch millisecond time of when the current value expires */
     private expiration: number = 0;
@@ -14,8 +14,15 @@ export class ExpiringValue<T> {
      *
      * @param factoryFn factory to lazy-load the value
      * @param ttl milliseconds the value is good for, after which it is reloaded.
+     * @param options optional options to change behavior
+     * @param options.cacheError set to true to cache for TTL a Promise rejection from factoryFn.
+     *        By default, a rejection is not cached and factoryFn will be retried upon the next call.
      */
-    constructor(private factoryFn: (() => Promise<T>), private ttl: number) {
+    constructor(
+        private factoryFn: (() => Promise<T>),
+        private ttl: number,
+        private options = {cacheError: false}
+    ) {
     }
 
     /**
@@ -24,7 +31,13 @@ export class ExpiringValue<T> {
     get(): Promise<T> {
         if (this.isExpired()) {
             this.value = this.factoryFn();
-            this.expiration = Date.now() + this.ttl;
+
+            if (this.options.cacheError) {
+                this.extendExpiration();
+            } else {
+                // Update expiration, only upon success
+                this.value.then(() => this.extendExpiration());
+            }
         }
 
         return this.value!;
@@ -44,5 +57,10 @@ export class ExpiringValue<T> {
      */
     isExpired(): boolean {
         return Date.now() > this.expiration;
+    }
+
+    /** Reset the value expiration to TTL past now */
+    private extendExpiration(): void {
+        this.expiration = Date.now() + this.ttl;
     }
 }
