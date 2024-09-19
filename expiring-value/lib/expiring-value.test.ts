@@ -1,8 +1,8 @@
-import {ExpiringValue} from "./expiring-value";
 import * as MockDate from "mockdate";
+import {ExpiringValue} from "./expiring-value";
 
 
-describe('ExpiringValue',() => {
+describe('ExpiringValue', () => {
     const baseDate = Date.now();
 
     beforeEach(() => {
@@ -18,7 +18,7 @@ describe('ExpiringValue',() => {
 
         // Initialize
         let sut = new ExpiringValue<string>(() => Promise.resolve(factoryValue), 1000);
-        expect(sut['value']).toBeFalsy();
+        expect(sut['value']).toBeUndefined();
         expect(sut['expiration']).toEqual(0);
 
         // First GET - lazy created
@@ -52,7 +52,7 @@ describe('ExpiringValue',() => {
 
         // Clear content..
         sut.clear();
-        expect(sut['value']).toBeFalsy();
+        expect(sut['value']).toBeUndefined();
         expect(sut['expiration']).toEqual(0);
 
         // Fourth GET - factory called again
@@ -63,5 +63,42 @@ describe('ExpiringValue',() => {
         expect(v4).toBe('world!');
         await expect(sut['value']).resolves.toBe('world!');
         expect(sut['expiration']).toEqual(baseDate + 1000);
+    });
+
+    test("doesn't cache failure", async () => {
+        let factoryResponse: Promise<string> = Promise.reject(new Error());
+
+        // Initialize
+        let sut = new ExpiringValue<string>(() => factoryResponse, 1000);
+        expect(sut['value']).toBeUndefined();
+        expect(sut['expiration']).toEqual(0);
+
+        // First GET - rejects - still expired
+        await expect(sut.get()).rejects.toThrow();
+        expect(sut['expiration']).toEqual(0);
+
+        // Second GET - calls again, success this time
+        factoryResponse = Promise.resolve("yay");
+        const v2 = await sut.get();
+        expect(v2).toBe('yay');
+        await expect(sut['value']).resolves.toBe('yay');
+        expect(sut['expiration']).toEqual(baseDate + 1000);
+    });
+
+    test("does cache failure when option selected", async () => {
+        let factoryResponse: Promise<string> = Promise.reject(new Error());
+
+        // Initialize
+        let sut = new ExpiringValue<string>(() => factoryResponse, 1000,{cacheError: true});
+        expect(sut['value']).toBeUndefined();
+        expect(sut['expiration']).toEqual(0);
+
+        // First GET - rejects - still expired
+        await expect(sut.get()).rejects.toThrow();
+        expect(sut['expiration']).toEqual(baseDate + 1000);
+
+        // Second GET - calls again, uses cached failure
+        factoryResponse = Promise.resolve("yay");
+        await expect(sut.get()).rejects.toThrow();
     });
 });
