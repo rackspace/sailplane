@@ -3,7 +3,7 @@
 ## What?
 The AwsHttps class is an HTTPS (notice, *not* HTTP) client purpose made for use in and with AWS environments.
 
-This is part of the [sailplane](https://github.com/onicagroup/sailplane) library of
+This is part of the [sailplane](https://github.com/rackspace/sailplane) library of
 utilities for AWS Serverless in Node.js.
 
 ## Why?
@@ -15,4 +15,4 @@ utilities for AWS Serverless in Node.js.
 - Easily extended for unit testing
 
 ## How?
-See the [doc site](https://docs.onica.com/projects/sailplane) for usage and examples.
+See the [docs](https://github.com/rackspace/sailplane/blob/master/README.md) for usage and examples.

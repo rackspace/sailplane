@@ -5,7 +5,7 @@
 StateStorage is a simple wrapper for SSM `getParameter` and `putParameter` functions, abstracting it into
 a contextual storage of small JSON objects.
 
-This is part of the [sailplane](https://github.com/onicagroup/sailplane) library of
+This is part of the [sailplane](https://github.com/rackspace/sailplane) library of
 utilities for AWS Serverless in Node.js.
 
 ## Why?
@@ -20,4 +20,5 @@ Why use this instead of AWS SSM API directly?
 - Consistent naming convention
 
 ## How?
-See the [doc site](https://docs.onica.com/projects/sailplane) for usage and examples.
+
+See the [docs](https://github.com/rackspace/sailplane/blob/master/README.md) for usage and examples.

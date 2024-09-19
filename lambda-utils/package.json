@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/lambda-utils",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "description": "Use middleware to remove redundancy in AWS Lambda handlers.",
   "keywords": [
     "aws",
@@ -18,11 +18,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/onicagroup/sailplane.git"
+    "url": "https://github.com/rackspace/sailplane.git"
   },
   "license": "Apache-2.0",
-  "author": "Onica Group",
-  "homepage": "https://docs.onica.com/projects/sailplane",
+  "author": "Rackspace Technology",
+  "homepage": "https://github.com/rackspace/sailplane",
   "contributors": [
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],

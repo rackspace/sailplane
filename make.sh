@@ -32,17 +32,6 @@ if [[ $COMMAND == build || $COMMAND == all ]]; then
       ( npm install && npm run test && npm run build) || exit $?
       popd || exit $?
     done
-
-    if [[ -z "$RTD_BUILD" ]]; then
-        echo
-        echo "***** Build documentation: docs"
-        echo
-        pushd docs || exit $?
-        make html || exit $?
-        popd || exit $?
-    else
-        echo "(skipping documentation build in ReadTheDocs)"
-    fi
 fi
 
 if [[ $COMMAND == check || $COMMAND == publish || $COMMAND == all ]]; then

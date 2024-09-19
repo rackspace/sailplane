@@ -2,13 +2,14 @@
 
 ## What?
 
-The ExpringValue generic class is a container for a value that is instantiated on-demand (lazy-loaded via factory) and cached for a limited
+The `ExpringValue` generic class is a container for a value that is instantiated on-demand (lazy-loaded via factory) and cached for a limited
 time. Once the cache expires, the factory is used again on next demand to get a fresh version.
 
-This is part of the [sailplane](https://github.com/onicagroup/sailplane) library of
+This is part of the [sailplane](https://github.com/rackspace/sailplane) library of
 utilities for AWS Serverless in Node.js.
 
 ## Why?
+
 `ExpiringValue` is a container for a value that is instantiated on-demand (lazy-loaded via factory)
 and cached for a limited time.
 Once the cache expires, the factory is used again on next demand to get a fresh version.
@@ -22,4 +23,5 @@ many hours, a mechanism is needed to deal with refreshing stale content - thus `
 a limited time. It even works in the browser for client code.
 
 ## How?
-See the [doc site](https://docs.onica.com/projects/sailplane) for usage and examples.
+
+See the [docs](https://github.com/rackspace/sailplane/blob/master/README.md) for usage and examples.

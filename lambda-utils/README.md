@@ -7,10 +7,11 @@ This collection of utility functions leverage the great [Middy](https://middy.js
 library to add middleware functionality to Lambda handlers. 
 You can extend it with your own middleware.
 
-This is part of the [sailplane](https://github.com/onicagroup/sailplane) library of
+This is part of the [sailplane](https://github.com/rackspace/sailplane) library of
 utilities for AWS Serverless in Node.js.
 
 ## Why?
+
 Middy gives you a great start as a solid middleware framework,
 but by itself you are still repeating the middleware registrations
 on each handler, its exception handler only works with errors created by the http-errors package,
@@ -36,4 +37,5 @@ Used with API Gateway, the included middlewares:
 - Leverages async syntax
 
 ## How?
-See the [doc site](https://docs.onica.com/projects/sailplane) for usage and examples.
+
+See the [docs](https://github.com/rackspace/sailplane/blob/master/README.md) for usage and examples.
