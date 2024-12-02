@@ -35,8 +35,8 @@ export class ExpiringValue<T> {
             if (this.options.cacheError) {
                 this.extendExpiration();
             } else {
-                // Update expiration, only upon success
-                this.value.then(() => this.extendExpiration());
+                // Update expiration, only upon success; no-op on error here
+                this.value.then(() => this.extendExpiration()).catch(() => undefined);
             }
         }
 
