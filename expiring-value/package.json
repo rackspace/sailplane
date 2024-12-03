@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "tsc && npm link && cp dist/expiring-value.d.ts ../docs/types/",
-    "test": "NODE_OPTIONS=--unhandled-rejections=none jest",
+    "test": "jest",
     "test:watch": "jest --watch",
     "clean:publish": "rm -r dist; npm run build && npm publish --access public"
   },
