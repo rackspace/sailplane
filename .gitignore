@@ -4,7 +4,6 @@
 .idea
 .project
 .classpath
-.c9/
 *.launch
 .settings/
 *.sublime-workspace
@@ -18,5 +17,3 @@ node_modules
 npm-debug.log
 coverage
 dist
-/experiment
-

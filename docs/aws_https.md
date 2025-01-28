@@ -21,9 +21,9 @@ AwsHttps is dependent on Sailplane [logger](logger.md) and [AWS4](https://github
 npm install @sailplane/aws-https @sailplane/logger
 ```
 
-## Typescript Declarations
+## API Documentation
 
-[aws-https.d.ts](types/aws-https.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/aws-https)
 
 ## Examples
 

@@ -80,7 +80,7 @@ npm install @sailplane/lambda-utils@2 @sailplane/logger middy@0
 ## Upgrading
 
 To upgrade from older versions of lambda-utils, remove the old lambda-utils and middy dependencies
-and then follow the install instructions above to install the latest. See also the
+and then follow the installation instructions above to install the latest. See also the
 [Middy upgrade instructions](https://middy.js.org/docs/category/upgrade).
 
 ## Structured Logging Attributes
@@ -92,10 +92,9 @@ adds the following properties:
 - `api_request_id` - the request ID from AWS API Gateway
 - `jwt_sub` - JWT (included by Cognito) authenticated subject of the request
 
-## Typescript Declarations
+## API Documentation
 
-- [handler-utils-utils.d.ts](types/handler-utils.d.ts)
-- [types.d.ts](types/types.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/lambda-utils)
 
 ## Examples
 

@@ -19,11 +19,10 @@ export class ExpiringValue<T> {
      *        By default, a rejection is not cached and factoryFn will be retried upon the next call.
      */
     constructor(
-        private factoryFn: (() => Promise<T>),
+        private factoryFn: () => Promise<T>,
         private ttl: number,
-        private options = {cacheError: false}
-    ) {
-    }
+        private options = { cacheError: false },
+    ) {}
 
     /**
      * Get value; lazy-load from factory if not yet loaded or if expired.

@@ -25,9 +25,9 @@ to load configuration and cache it, but force the refresh of that configuration 
 npm install @sailplane/expiring-value
 ```
 
-## Typescript Declarations
+## API Documentation
 
-[expiring-value.d.ts](types/expiring-value.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/expiring-value)
 
 ## Example
 

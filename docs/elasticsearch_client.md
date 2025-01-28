@@ -24,9 +24,9 @@ Use it with Elasticsearch's [Document API](https://www.elastic.co/guide/en/elast
 npm install @sailplane/elasticsearch-client @sailplane/aws-https @sailplane/logger
 ```
 
-## Typescript Declarations
+## API Documentation
 
-[elasticsearch-client.d.ts](types/elasticsearch-client.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/elasticsearch-client)
 
 ## Examples
 

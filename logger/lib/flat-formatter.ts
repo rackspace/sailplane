@@ -20,7 +20,7 @@ export const flatFormatter: FormatterFn = (
 ): any[] => {
     const out: any[] = [];
     if (loggerConfig.logTimestamps) {
-        out.push(new Date().toISOString().substr(0, 19));
+        out.push(new Date().toISOString().substring(0, 19));
     }
 
     if (loggerConfig.outputLevels) {

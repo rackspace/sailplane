@@ -39,9 +39,9 @@ If you wish to use the Typescript decorator, these options must be enabled in `t
 If using [esbuild](https://esbuild.github.io), a plugin such as
 [esbuild-decorators](https://github.com/anatine/esbuildnx/tree/main/packages/esbuild-decorators) is necessary.
 
-## Typescript Declarations
+## API Documentation
 
-[injector.d.ts](types/injector.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/injector)
 
 ## Usage with Examples
 

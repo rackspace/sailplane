@@ -22,10 +22,9 @@ so that you get meaningful stack traces.
 npm install @sailplane/logger
 ```
 
-## Typescript Declarations
+## API Documentation
 
-- [common.d.ts](types/common.d.ts)
-- [logger.d.ts](types/logger.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/logger)
 
 ## Examples
 

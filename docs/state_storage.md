@@ -28,10 +28,9 @@ Why use this instead of AWS SSM API directly?
 npm install @sailplane/state-storage @sailplane/logger @aws-sdk/client-ssm
 ```
 
-## Typescript Declarations
+## API Documentation
 
-- [state-storage.d.ts](types/state-storage.d.ts)
-- [state-storage-fake.d.ts](types/state-storage-fake.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/state-storage)
 
 ## Examples
 

@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/expiring-value",
-  "version": "4.0.1",
+  "version": "5.0.0",
   "description": "Container for a value that is instantiated on-demand (lazy-loaded via factory) and cached for a limited time.",
   "keywords": [
     "factory",
@@ -9,10 +9,12 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link && cp dist/expiring-value.d.ts ../docs/types/",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "clean:publish": "rm -r dist; npm run build && npm publish --access public"
+    "analyze": "npm run build && npm run lint && npm test && npm run prettier",
+    "clean": "rm -rf coverage dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint lib",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -25,17 +27,12 @@
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],
   "devDependencies": {
-    "@types/jest": "^29.5.13",
-    "@types/node": "^18.19.17",
-    "jest": "^29.7.0",
-    "mockdate": "^3.0.5",
-    "ts-jest": "^29.2.5",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "typescript": "4.9.x"
+    "mockdate": "^3.0.5"
   },
-  "main": "dist/expiring-value.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist/expiring-value.d.ts"
+    "dist"
   ]
 }
