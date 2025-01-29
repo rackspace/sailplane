@@ -10,7 +10,7 @@
     "typescript"
   ],
   "scripts": {
-    "analyze": "npm run build && npm run lint && npm test && npm run prettier",
+    "analyze": "npm run build && npm run lint && npm test",
     "clean": "rm -rf coverage dist",
     "build": "tsup",
     "dev": "tsup --watch",

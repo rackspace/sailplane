@@ -44,7 +44,18 @@ or use it as an example to write your own, to add more middleware!
 
 ## Install
 
-**To use LambdaUtils v6.x with Middy v4.x.x (latest):**
+### LambdaUtils v7.x with Middy v6.x.x (latest)
+
+**Works best with ES Modules, not CommonJS.** See [Middy Upgrade Notes](https://middy.js.org/docs/upgrade/5-6).
+
+```shell
+npm install @sailplane/lambda-utils@7 @sailplane/logger @middy/core@6 @middy/http-cors@6 @middy/http-event-normalizer@6 @middy/http-header-normalizer@6 @middy/http-json-body-parser@6
+```
+
+The extra `@middy/` middleware packages are optional if you write your own wrapper function that does not use them.
+See below.
+
+### LambdaUtils v6.x with Middy v4.x.x
 
 ```shell
 npm install @sailplane/lambda-utils@6 @sailplane/logger @middy/core@4 @middy/http-cors@4 @middy/http-event-normalizer@4 @middy/http-header-normalizer@4 @middy/http-json-body-parser@4
@@ -53,7 +64,7 @@ npm install @sailplane/lambda-utils@6 @sailplane/logger @middy/core@4 @middy/htt
 The extra `@middy/` middleware packages are optional if you write your own wrapper function that does not use them.
 See below.
 
-**To use LambdaUtils v4.x or v5.x with Middy v2.x.x:**
+### LambdaUtils v4.x or v5.x with Middy v2.x.x
 
 ```shell
 npm install @sailplane/lambda-utils@4 @sailplane/logger @middy/core@2 @middy/http-cors@2 @middy/http-event-normalizer@2 @middy/http-header-normalizer@2 @middy/http-json-body-parser@2
@@ -62,7 +73,7 @@ npm install @sailplane/lambda-utils@4 @sailplane/logger @middy/core@2 @middy/htt
 The extra @middy/ middleware packages are optional if you write your own wrapper function that does not use them.
 See below.
 
-**To use LambdaUtils v3.x with Middy v1.x.x:**
+### LambdaUtils v3.x with Middy v1.x.x
 
 ```shell
 npm install @sailplane/lambda-utils@3 @sailplane/logger @middy/core@1 @middy/http-cors@1 @middy/http-event-normalizer@1 @middy/http-header-normalizer@1 @middy/http-json-body-parser@1
@@ -70,12 +81,6 @@ npm install @sailplane/lambda-utils@3 @sailplane/logger @middy/core@1 @middy/htt
 
 The extra @middy/ middleware packages are optional if you write your own wrapper function that does not use them.
 See below.
-
-**To use LambdaUtils v2.x with Middy v0.x.x:**
-
-```shell
-npm install @sailplane/lambda-utils@2 @sailplane/logger middy@0
-```
 
 ## Upgrading
 

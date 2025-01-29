@@ -20,7 +20,7 @@ As of v3, Injector also supports a Typescript decorator for registering classes.
 ## Install
 
 ```shell
-npm install @sailplane/injector @sailplane/logger bottlejs@1.7
+npm install @sailplane/injector @sailplane/logger bottlejs@2
 ```
 
 ## Configuration
