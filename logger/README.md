@@ -11,7 +11,7 @@ utilities for AWS Serverless in Node.js.
 
 Sadly, `console.log` is the #1 debugging tool when writing serverless code. Logger extends it with levels,
 timestamps, context/category names, and object formatting. It's just a few small incremental improvements, and
-yet together takes logging a leap forward. It'll do until we can have a usable cloud debugger. 
+yet together takes logging a leap forward. It'll do until we can have a usable cloud debugger.
 
 There are far more complicated logging packages available for Javascript;
 but sailplane is all about simplicity, and this logger gives you all that

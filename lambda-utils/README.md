@@ -2,9 +2,9 @@
 
 ## What?
 
-There's a lot of boilerplate in Lambda handlers. 
+There's a lot of boilerplate in Lambda handlers.
 This collection of utility functions leverage the great [Middy](https://middy.js.org/)
-library to add middleware functionality to Lambda handlers. 
+library to add middleware functionality to Lambda handlers.
 You can extend it with your own middleware.
 
 This is part of the [sailplane](https://github.com/rackspace/sailplane) library of
@@ -27,13 +27,13 @@ Used with API Gateway, the included middlewares:
 - If incoming content is JSON text, replaces event.body with parsed object
 - Ensures that event.queryStringParameters and event.pathParameters are defined, to avoid TypeErrors
 - Ensures that handler response is formatted properly as a successful API Gateway result
-   - Unique to LambdaUtils!
-   - Simply return what you want as the body of the HTTP response
+  - Unique to LambdaUtils!
+  - Simply return what you want as the body of the HTTP response
 - Catch http-errors exceptions into proper HTTP responses
 - Catch other exceptions and return as HTTP 500
-   - Unique to LambdaUtils!
-   - Besides providing better feedback to the client, not throwing an exception out of your handler means that your
-     instance will not be destroyed and suffer a cold start on the next invocation
+  - Unique to LambdaUtils!
+  - Besides providing better feedback to the client, not throwing an exception out of your handler means that your
+    instance will not be destroyed and suffer a cold start on the next invocation
 - Leverages async syntax
 
 ## How?

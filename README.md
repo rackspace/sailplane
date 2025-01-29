@@ -20,27 +20,26 @@ Every tool is the genesis of real world needs, and they continue to evolve.
 This collection is part of Rackspace Technology's commitment to give back to the open source community.
 Find this and other Rackspace open source repositories on [GitHub](https://github.com/rackspace).
 
-
 ## Content
 
 Each utility is described on its own page:
 
-* [AwsHttps - HTTPS client with AWS Signature v4](docs/aws_https.md)
-* [ElasticsearchClient - Communicate with AWS Elasticsearch](docs/elasticsearch_client.md)
-* [ExpiringValue - Value that is instantiated on-demand and cached for a limited time](docs/expiring_value.md)
-* [Injector - Light-weight and type-safe Dependency Injection](docs/injector.md)
-* [LambdaUtils - AWS Lambda handler middleware](docs/lambda_utils.md)
-* [Logger - CloudWatch and serverless-offline friendly logger](docs/logger.md)
-* [StateStorage - Serverless state and configuration storage](docs/state_storage.md)
-* [More Examples](docs/examples.md)
-* [License](docs/license.md)
+- [AwsHttps - HTTPS client with AWS Signature v4](docs/aws_https.md)
+- [ElasticsearchClient - Communicate with AWS Elasticsearch](docs/elasticsearch_client.md)
+- [ExpiringValue - Value that is instantiated on-demand and cached for a limited time](docs/expiring_value.md)
+- [Injector - Light-weight and type-safe Dependency Injection](docs/injector.md)
+- [LambdaUtils - AWS Lambda handler middleware](docs/lambda_utils.md)
+- [Logger - CloudWatch and serverless-offline friendly logger](docs/logger.md)
+- [StateStorage - Serverless state and configuration storage](docs/state_storage.md)
+- [More Examples](docs/examples.md)
+- [License](docs/license.md)
 
 ## Why "Sailplane"?
 
 Onica's early OSS releases have had aviation themed names;
 this may or may not have something to do with the CTO being a pilot. Nobody really knows.
 
-Sailplane was selected for this *serverless* toolset by considering that
+Sailplane was selected for this _serverless_ toolset by considering that
 serverless is to computing without the complexities of a server,
 as a sailplane is to flight without the complexities of an airplane.
 

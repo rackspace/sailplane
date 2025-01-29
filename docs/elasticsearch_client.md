@@ -34,8 +34,9 @@ Simple example:
 
 ```ts
 function get(id: string): Promise<Ticket> {
-    return this.es.request('GET', '/ticket/local/' + id)
-        .then((esDoc: ElasticsearchResult) => esDoc._source as Ticket);
+  return this.es
+    .request("GET", "/ticket/local/" + id)
+    .then((esDoc: ElasticsearchResult) => esDoc._source as Ticket);
 }
 ```
 

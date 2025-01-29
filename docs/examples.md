@@ -6,10 +6,10 @@ This section includes some larger examples which use _multiple_ packages.
 
 Uses:
 
-* [AwsHttps](aws_https.md)
-* [ElasticsearchClient](elasticsearch_client.md)
-* [Injector](injector.md)
-* [Logger](logger.md)
+- [AwsHttps](aws_https.md)
+- [ElasticsearchClient](elasticsearch_client.md)
+- [Injector](injector.md)
+- [Logger](logger.md)
 
 ```ts
 import {AwsHttps} from "@sailplane/aws-https";
@@ -149,11 +149,11 @@ functions:
 
 ```ts
 // src/handlers.ts
-import 'source-map-support/register';
-import {APIGatewayEvent} from 'aws-lambda';
-import {Injector} from "@sailplane/injector";
+import "source-map-support/register";
+import { APIGatewayEvent } from "aws-lambda";
+import { Injector } from "@sailplane/injector";
 import * as LambdaUtils from "@sailplane/lambda-utils";
-import {ChatService} from "./chat-service";
+import { ChatService } from "./chat-service";
 import * as createHttpError from "http-errors";
 
 Injector.register(StateStorage, () => new StateStorage(process.env.STATE_STORAGE_PREFIX));
@@ -161,12 +161,14 @@ Injector.register(StateStorage, () => new StateStorage(process.env.STATE_STORAGE
 /**
  * Fetch history of chat on the user's channel
  */
-export const getChatHistory = LambdaUtils.wrapApiHandler(async (event: LambdaUtils.APIGatewayProxyEvent) => {
+export const getChatHistory = LambdaUtils.wrapApiHandler(
+  async (event: LambdaUtils.APIGatewayProxyEvent) => {
     const channel = event.queryStringParameters.channel;
     const cursor = event.queryStringParameters.cursor;
 
     return Injector.get(ChatService)!.getHistory(channel, cursor);
-});
+  },
+);
 ```
 
 ```ts

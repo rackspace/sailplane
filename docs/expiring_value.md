@@ -39,16 +39,16 @@ const https = new AwsHttps();
 const cache = {};
 
 export function fetchWithCache(url: string): Promise<any> {
-    if (!cache[url]) {
-        cache[url] = new ExpiringValue<any>(() => loadData(url), CACHE_PERIOD);
-    }
+  if (!cache[url]) {
+    cache[url] = new ExpiringValue<any>(() => loadData(url), CACHE_PERIOD);
+  }
 
-    return cache[url].get();
+  return cache[url].get();
 }
 
 function loadData(url: string): any {
-    const req = https.buildRequest('GET', new URL(url));
-    return https.request(req);
+  const req = https.buildRequest("GET", new URL(url));
+  return https.request(req);
 }
 ```
 

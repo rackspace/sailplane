@@ -66,20 +66,19 @@ Not all are needed if only reading parameters or if not using the `secure` optio
 **Simple example storing state**
 
 ```ts
-import {StateStorage} from "@sailplane/state-storage";
+import { StateStorage } from "@sailplane/state-storage";
 
 const stateStore = new StateStorage(process.env.STATE_STORAGE_PREFIX!);
 
 export async function myHandler(event, context): Promise<any> {
-  let state = await stateStore.get('thing', 'state');
+  let state = await stateStore.get("thing", "state");
   const result = await processRequest(state, event);
-  await stateStore.set('thing', 'state', state);
+  await stateStore.set("thing", "state", state);
   return result;
 }
 ```
 
 See [examples](examples.md) for another example.
-
 
 ## Unit testing your services
 

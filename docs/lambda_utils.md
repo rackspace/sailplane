@@ -24,11 +24,11 @@ Used with API Gateway v1 (REST API) and v2 (HTTP API), the included middlewares 
 - If incoming content is JSON text, replaces event.body with parsed object.
 - Ensures that event.queryStringParameters and event.pathParameters are defined, to avoid TypeErrors.
 - Ensures that handler response is formatted properly as a successful API Gateway result.
-   - Unique to LambdaUtils!
-   - Simply return what you want as the body of the HTTP response.
+  - Unique to LambdaUtils!
+  - Simply return what you want as the body of the HTTP response.
 - Catch http-errors exceptions into proper HTTP responses.
 - Catch other exceptions and return as HTTP 500.
-   - Unique to LambdaUtils!
+  - Unique to LambdaUtils!
 - Registers Lambda context with Sailplane's [Logger](logger.md) for structured logging. (Detail below.)
 - Fully leverages Typescript and async syntax.
 
@@ -101,27 +101,27 @@ adds the following properties:
 ### General use
 
 ```ts
-import {APIGatewayEvent} from 'aws-lambda';
+import { APIGatewayEvent } from "aws-lambda";
 import * as LambdaUtils from "@sailplane/lambda-utils";
 import * as createError from "http-errors";
 
-export const hello = LambdaUtils.wrapApiHandlerV2(async (event: LambdaUtils.APIGatewayProxyEvent) => {
+export const hello = LambdaUtils.wrapApiHandlerV2(
+  async (event: LambdaUtils.APIGatewayProxyEvent) => {
     // These event objects are now always defined, so don't need to check for undefined. 🙂
     const who = event.pathParameters.who;
-    let points = Number(event.queryStringParameters.points || '0');
+    let points = Number(event.queryStringParameters.points || "0");
 
     if (points > 0) {
-        let message = 'Hello ' + who;
-        for (; points > 0; --points)
-            message = message + '!';
+      let message = "Hello " + who;
+      for (; points > 0; --points) message = message + "!";
 
-        return {message};
+      return { message };
+    } else {
+      // LambdaUtils will catch and return HTTP 400
+      throw new createError.BadRequest("Missing points parameter");
     }
-    else {
-        // LambdaUtils will catch and return HTTP 400
-        throw new createError.BadRequest('Missing points parameter');
-    }
-});
+  },
+);
 ```
 
 See [examples](examples.md) for another example.
@@ -129,15 +129,15 @@ See [examples](examples.md) for another example.
 ### Extending LambdaUtils for your own app
 
 ```ts
-import {ProxyHandler} from "aws-lambda";
+import { ProxyHandler } from "aws-lambda";
 import middy from "@middy/core";
 import * as createError from "http-errors";
 import * as LambdaUtils from "@sailplane/lambda-utils";
 
 /** ID user user authenticated in running Lambda */
-let authenticatedUserId: string|undefined;
+let authenticatedUserId: string | undefined;
 
-export function getAuthenticatedUserId(): string|undefined {
+export function getAuthenticatedUserId(): string | undefined {
   return authenticatedUserId;
 }
 
@@ -149,14 +149,14 @@ const authMiddleware = (requiredRole?: string): Required<middy.MiddlewareObj> =>
     before: async (request) => {
       const claims = request.event.requestContext.authorizer?.claims;
 
-      const role = claims['custom:role'];
+      const role = claims["custom:role"];
       if (requiredRole && role !== requiredRole) {
-          throw new createError.Forbidden();
+        throw new createError.Forbidden();
       }
 
       authenticatedUserId = claims?.sub;
       if (!authenticatedUserId) {
-          throw new createError.Unauthorized("No user authorized");
+        throw new createError.Unauthorized("No user authorized");
       }
     },
     after: async (_) => {
@@ -164,25 +164,25 @@ const authMiddleware = (requiredRole?: string): Required<middy.MiddlewareObj> =>
     },
     onError: async (_) => {
       authenticatedUserId = undefined;
-    }
+    },
   };
-}
+};
 
 export interface WrapApiHandlerOptions {
-    noUserAuth?: boolean;
-    requiredRole?: string;
+  noUserAuth?: boolean;
+  requiredRole?: string;
 }
 
 export function wrapApiHandlerWithAuth(
-    options: WrapApiHandlerOptions,
-    handler: LambdaUtils.AsyncProxyHandlerV2
+  options: WrapApiHandlerOptions,
+  handler: LambdaUtils.AsyncProxyHandlerV2,
 ): LambdaUtils.AsyncMiddyifedHandlerV2 {
-    const wrap = LambdaUtils.wrapApiHandlerV2(handler);
+  const wrap = LambdaUtils.wrapApiHandlerV2(handler);
 
-    if (!options.noUserAuth) {
-        wrap.use(userAuthMiddleware(options.requiredRole));
-    }
+  if (!options.noUserAuth) {
+    wrap.use(userAuthMiddleware(options.requiredRole));
+  }
 
-    return wrap;
+  return wrap;
 }
 ```
