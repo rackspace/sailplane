@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/injector",
-  "version": "4.0.1",
+  "version": "5.0.0-rc.2",
   "description": "Simple, light-weight, lazy-instantiating, and type-safe dependency injection in Typescript.",
   "keywords": [
     "di",
@@ -30,15 +30,15 @@
   },
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
-    "bottlejs": "^2.0.1"
-  },
-  "peerDependencies": {
-    "@sailplane/logger": ">=6.0.0",
     "bottlejs": "2.0.x"
   },
-  "main": "dist/injector.js",
-  "module": "dist/injector.mjs",
-  "types": "dist/injector.d.ts",
+  "peerDependencies": {
+    "@sailplane/logger": "^6.0.0-rc.0",
+    "bottlejs": "2.0.x"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
   ]
