@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/expiring-value",
-  "version": "5.0.0-rc.0",
+  "version": "5.0.0",
   "description": "Container for a value that is instantiated on-demand (lazy-loaded via factory) and cached for a limited time.",
   "keywords": [
     "factory",

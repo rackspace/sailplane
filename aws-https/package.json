@@ -34,7 +34,9 @@
     "nock": "^14.0.0"
   },
   "peerDependencies": {
-    "@sailplane/logger": ">=6.0.0"
+    "@sailplane/logger": ">=6.0.0",
+    "aws4": "^1.13.2",
+    "aws-sdk": "^2.1692.0"
   },
   "dependencies": {
     "aws4": "^1.13.2"

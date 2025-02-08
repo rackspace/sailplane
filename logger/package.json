@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/logger",
-  "version": "6.0.0-rc.0",
+  "version": "6.0.0",
   "description": "CloudWatch and serverless-offline friendly logger.",
   "keywords": [
     "aws",
