@@ -24,11 +24,11 @@ Used with API Gateway v1 (REST API) and v2 (HTTP API), the included middlewares 
 - If incoming content is JSON text, replaces event.body with parsed object.
 - Ensures that event.queryStringParameters and event.pathParameters are defined, to avoid TypeErrors.
 - Ensures that handler response is formatted properly as a successful API Gateway result.
-   - Unique to LambdaUtils!
-   - Simply return what you want as the body of the HTTP response.
+  - Unique to LambdaUtils!
+  - Simply return what you want as the body of the HTTP response.
 - Catch http-errors exceptions into proper HTTP responses.
 - Catch other exceptions and return as HTTP 500.
-   - Unique to LambdaUtils!
+  - Unique to LambdaUtils!
 - Registers Lambda context with Sailplane's [Logger](logger.md) for structured logging. (Detail below.)
 - Fully leverages Typescript and async syntax.
 
@@ -44,7 +44,18 @@ or use it as an example to write your own, to add more middleware!
 
 ## Install
 
-**To use LambdaUtils v6.x with Middy v4.x.x (latest):**
+### LambdaUtils v7.x with Middy v6.x.x (latest)
+
+**Works best with ES Modules, not CommonJS.** See [Middy Upgrade Notes](https://middy.js.org/docs/upgrade/5-6).
+
+```shell
+npm install @sailplane/lambda-utils@7 @sailplane/logger @middy/core@6 @middy/http-cors@6 @middy/http-event-normalizer@6 @middy/http-header-normalizer@6 @middy/http-json-body-parser@6
+```
+
+The extra `@middy/` middleware packages are optional if you write your own wrapper function that does not use them.
+See below.
+
+### LambdaUtils v6.x with Middy v4.x.x
 
 ```shell
 npm install @sailplane/lambda-utils@6 @sailplane/logger @middy/core@4 @middy/http-cors@4 @middy/http-event-normalizer@4 @middy/http-header-normalizer@4 @middy/http-json-body-parser@4
@@ -53,7 +64,7 @@ npm install @sailplane/lambda-utils@6 @sailplane/logger @middy/core@4 @middy/htt
 The extra `@middy/` middleware packages are optional if you write your own wrapper function that does not use them.
 See below.
 
-**To use LambdaUtils v4.x or v5.x with Middy v2.x.x:**
+### LambdaUtils v4.x or v5.x with Middy v2.x.x
 
 ```shell
 npm install @sailplane/lambda-utils@4 @sailplane/logger @middy/core@2 @middy/http-cors@2 @middy/http-event-normalizer@2 @middy/http-header-normalizer@2 @middy/http-json-body-parser@2
@@ -62,7 +73,7 @@ npm install @sailplane/lambda-utils@4 @sailplane/logger @middy/core@2 @middy/htt
 The extra @middy/ middleware packages are optional if you write your own wrapper function that does not use them.
 See below.
 
-**To use LambdaUtils v3.x with Middy v1.x.x:**
+### LambdaUtils v3.x with Middy v1.x.x
 
 ```shell
 npm install @sailplane/lambda-utils@3 @sailplane/logger @middy/core@1 @middy/http-cors@1 @middy/http-event-normalizer@1 @middy/http-header-normalizer@1 @middy/http-json-body-parser@1
@@ -71,16 +82,10 @@ npm install @sailplane/lambda-utils@3 @sailplane/logger @middy/core@1 @middy/htt
 The extra @middy/ middleware packages are optional if you write your own wrapper function that does not use them.
 See below.
 
-**To use LambdaUtils v2.x with Middy v0.x.x:**
-
-```shell
-npm install @sailplane/lambda-utils@2 @sailplane/logger middy@0
-```
-
 ## Upgrading
 
 To upgrade from older versions of lambda-utils, remove the old lambda-utils and middy dependencies
-and then follow the install instructions above to install the latest. See also the
+and then follow the installation instructions above to install the latest. See also the
 [Middy upgrade instructions](https://middy.js.org/docs/category/upgrade).
 
 ## Structured Logging Attributes
@@ -92,37 +97,36 @@ adds the following properties:
 - `api_request_id` - the request ID from AWS API Gateway
 - `jwt_sub` - JWT (included by Cognito) authenticated subject of the request
 
-## Typescript Declarations
+## API Documentation
 
-- [handler-utils-utils.d.ts](types/handler-utils.d.ts)
-- [types.d.ts](types/types.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/lambda-utils)
 
 ## Examples
 
 ### General use
 
 ```ts
-import {APIGatewayEvent} from 'aws-lambda';
+import { APIGatewayEvent } from "aws-lambda";
 import * as LambdaUtils from "@sailplane/lambda-utils";
 import * as createError from "http-errors";
 
-export const hello = LambdaUtils.wrapApiHandlerV2(async (event: LambdaUtils.APIGatewayProxyEvent) => {
+export const hello = LambdaUtils.wrapApiHandlerV2(
+  async (event: LambdaUtils.APIGatewayProxyEvent) => {
     // These event objects are now always defined, so don't need to check for undefined. 🙂
     const who = event.pathParameters.who;
-    let points = Number(event.queryStringParameters.points || '0');
+    let points = Number(event.queryStringParameters.points || "0");
 
     if (points > 0) {
-        let message = 'Hello ' + who;
-        for (; points > 0; --points)
-            message = message + '!';
+      let message = "Hello " + who;
+      for (; points > 0; --points) message = message + "!";
 
-        return {message};
+      return { message };
+    } else {
+      // LambdaUtils will catch and return HTTP 400
+      throw new createError.BadRequest("Missing points parameter");
     }
-    else {
-        // LambdaUtils will catch and return HTTP 400
-        throw new createError.BadRequest('Missing points parameter');
-    }
-});
+  },
+);
 ```
 
 See [examples](examples.md) for another example.
@@ -130,15 +134,15 @@ See [examples](examples.md) for another example.
 ### Extending LambdaUtils for your own app
 
 ```ts
-import {ProxyHandler} from "aws-lambda";
+import { ProxyHandler } from "aws-lambda";
 import middy from "@middy/core";
 import * as createError from "http-errors";
 import * as LambdaUtils from "@sailplane/lambda-utils";
 
 /** ID user user authenticated in running Lambda */
-let authenticatedUserId: string|undefined;
+let authenticatedUserId: string | undefined;
 
-export function getAuthenticatedUserId(): string|undefined {
+export function getAuthenticatedUserId(): string | undefined {
   return authenticatedUserId;
 }
 
@@ -150,14 +154,14 @@ const authMiddleware = (requiredRole?: string): Required<middy.MiddlewareObj> =>
     before: async (request) => {
       const claims = request.event.requestContext.authorizer?.claims;
 
-      const role = claims['custom:role'];
+      const role = claims["custom:role"];
       if (requiredRole && role !== requiredRole) {
-          throw new createError.Forbidden();
+        throw new createError.Forbidden();
       }
 
       authenticatedUserId = claims?.sub;
       if (!authenticatedUserId) {
-          throw new createError.Unauthorized("No user authorized");
+        throw new createError.Unauthorized("No user authorized");
       }
     },
     after: async (_) => {
@@ -165,25 +169,25 @@ const authMiddleware = (requiredRole?: string): Required<middy.MiddlewareObj> =>
     },
     onError: async (_) => {
       authenticatedUserId = undefined;
-    }
+    },
   };
-}
+};
 
 export interface WrapApiHandlerOptions {
-    noUserAuth?: boolean;
-    requiredRole?: string;
+  noUserAuth?: boolean;
+  requiredRole?: string;
 }
 
 export function wrapApiHandlerWithAuth(
-    options: WrapApiHandlerOptions,
-    handler: LambdaUtils.AsyncProxyHandlerV2
+  options: WrapApiHandlerOptions,
+  handler: LambdaUtils.AsyncProxyHandlerV2,
 ): LambdaUtils.AsyncMiddyifedHandlerV2 {
-    const wrap = LambdaUtils.wrapApiHandlerV2(handler);
+  const wrap = LambdaUtils.wrapApiHandlerV2(handler);
 
-    if (!options.noUserAuth) {
-        wrap.use(userAuthMiddleware(options.requiredRole));
-    }
+  if (!options.noUserAuth) {
+    wrap.use(userAuthMiddleware(options.requiredRole));
+  }
 
-    return wrap;
+  return wrap;
 }
 ```

@@ -1,19 +1,21 @@
-import {APIGatewayProxyResult} from "aws-lambda";
-import middy from '@middy/core';
-import cors from '@middy/http-cors';
-import httpEventNormalizer from '@middy/http-event-normalizer';
-import httpHeaderNormalizer from '@middy/http-header-normalizer';
-import httpJsonBodyParser from '@middy/http-json-body-parser';
-import {Logger} from "@sailplane/logger";
+import { APIGatewayProxyResult } from "aws-lambda";
+import middy from "@middy/core";
+import cors from "@middy/http-cors";
+import httpEventNormalizer from "@middy/http-event-normalizer";
+import httpHeaderNormalizer from "@middy/http-header-normalizer";
+import httpJsonBodyParser from "@middy/http-json-body-parser";
+import { Logger } from "@sailplane/logger";
 import {
-    AsyncMiddyifedHandlerV1, AsyncMiddyifedHandlerV2,
-    AsyncProxyHandlerV1, AsyncProxyHandlerV2
+  AsyncMiddyifedHandlerV1,
+  AsyncMiddyifedHandlerV2,
+  AsyncProxyHandlerV1,
+  AsyncProxyHandlerV2,
 } from "./types";
-import {resolvedPromiseIsSuccessMiddleware} from "./resolved-promise-is-success";
-import {unhandledExceptionMiddleware} from "./unhandled-exception";
+import { resolvedPromiseIsSuccessMiddleware } from "./resolved-promise-is-success";
+import { unhandledExceptionMiddleware } from "./unhandled-exception";
 import { loggerContextMiddleware } from "./logger-context";
 
-const logger = new Logger('lambda-utils');
+const logger = new Logger("lambda-utils");
 
 /**
  * Wrap an API Gateway V1 format proxy lambda function handler to add features:
@@ -37,14 +39,17 @@ const logger = new Logger('lambda-utils');
  * @see https://www.npmjs.com/package/http-errors
  */
 export function wrapApiHandler(handler: AsyncProxyHandlerV1): AsyncMiddyifedHandlerV1 {
-    return middy(handler)
-        .use(cors())
-        .use(resolvedPromiseIsSuccessMiddleware())
-        .use(unhandledExceptionMiddleware())
-        .use(loggerContextMiddleware())
-        .use(httpEventNormalizer())
-        .use(httpHeaderNormalizer())
-        .use(httpJsonBodyParser());
+  return middy(handler)
+    .use(cors({ origin: "*" }))
+    .use(resolvedPromiseIsSuccessMiddleware())
+    .use(unhandledExceptionMiddleware())
+    .use(loggerContextMiddleware())
+    .use(httpEventNormalizer())
+    .use(httpHeaderNormalizer())
+    .use(
+      // Parse JSON body, but don't throw when there is no body
+      httpJsonBodyParser({ disableContentTypeError: true }),
+    ) as unknown as AsyncMiddyifedHandlerV1;
 }
 export const wrapApiHandlerV1 = wrapApiHandler;
 
@@ -70,14 +75,17 @@ export const wrapApiHandlerV1 = wrapApiHandler;
  * @see https://www.npmjs.com/package/http-errors
  */
 export function wrapApiHandlerV2(handler: AsyncProxyHandlerV2): AsyncMiddyifedHandlerV2 {
-    return middy(handler)
-        .use(cors())
-        .use(resolvedPromiseIsSuccessMiddleware())
-        .use(unhandledExceptionMiddleware())
-        .use(loggerContextMiddleware())
-        .use(httpEventNormalizer())
-        .use(httpHeaderNormalizer())
-        .use(httpJsonBodyParser());
+  return middy(handler)
+    .use(cors({ origin: "*" }))
+    .use(resolvedPromiseIsSuccessMiddleware())
+    .use(unhandledExceptionMiddleware())
+    .use(loggerContextMiddleware())
+    .use(httpEventNormalizer())
+    .use(httpHeaderNormalizer())
+    .use(
+      // Parse JSON body, but don't throw when there is no body
+      httpJsonBodyParser({ disableContentTypeError: true }),
+    ) as unknown as AsyncMiddyifedHandlerV2;
 }
 
 /**
@@ -92,13 +100,13 @@ export function wrapApiHandlerV2(handler: AsyncProxyHandlerV2): AsyncMiddyifedHa
  * @returns {APIGatewayProxyResult}
  */
 export function apiSuccess(result?: any): APIGatewayProxyResult {
-    return {
-        statusCode: 200,
-        body: result ? JSON.stringify(result) : '',
-        headers: {
-            "content-type": result ? "application/json; charset=utf-8" : "text/plain; charset=utf-8"
-        }
-    };
+  return {
+    statusCode: 200,
+    body: result ? JSON.stringify(result) : "",
+    headers: {
+      "content-type": result ? "application/json; charset=utf-8" : "text/plain; charset=utf-8",
+    },
+  };
 }
 
 /**
@@ -113,14 +121,14 @@ export function apiSuccess(result?: any): APIGatewayProxyResult {
  * @returns {APIGatewayProxyResult}
  */
 export function apiFailure(statusCode: number, message?: string): APIGatewayProxyResult {
-    const response = {
-        statusCode,
-        body: message || '',
-        headers: {
-            "content-type": "text/plain; charset=utf-8"
-        }
-    };
+  const response = {
+    statusCode,
+    body: message || "",
+    headers: {
+      "content-type": "text/plain; charset=utf-8",
+    },
+  };
 
-    logger.warn("Response to API Gateway: ", response);
-    return response;
+  logger.warn("Response to API Gateway: ", response);
+  return response;
 }

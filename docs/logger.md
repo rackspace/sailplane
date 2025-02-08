@@ -22,40 +22,39 @@ so that you get meaningful stack traces.
 npm install @sailplane/logger
 ```
 
-## Typescript Declarations
+## API Documentation
 
-- [common.d.ts](types/common.d.ts)
-- [logger.d.ts](types/logger.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/logger)
 
 ## Examples
 
 ```ts
-import {Logger, LogLevel} from "@sailplane/logger";
-const logger = new Logger('name-of-module');
+import { Logger, LogLevel } from "@sailplane/logger";
+const logger = new Logger("name-of-module");
 
 logger.info("Hello World!");
 // INFO name-of-module: Hello World!
 
-Logger.initialize({level: LogLevel.INFO});
+Logger.initialize({ level: LogLevel.INFO });
 logger.debug("DEBUG < INFO.");
 // No output
 
-Logger.initialize({logTimestamps: true});
+Logger.initialize({ logTimestamps: true });
 logger.info("Useful local log");
 // 2018-11-15T18:26:20 INFO name-of-module: Useful local log
 
-logger.warn("Exception ", {message: "oops"});
+logger.warn("Exception ", { message: "oops" });
 // 2018-11-15T18:29:38 INFO name-of-module: Exception {message:"oops"}
 
-Logger.initialize({format: "PRETTY"});
-logger.error("Exception ", {message: "oops"});
+Logger.initialize({ format: "PRETTY" });
+logger.error("Exception ", { message: "oops" });
 // 2018-11-15T18:30:49 INFO name-of-module: Exception {
 //   message: "oops"
 // }
 
 Logger.initialize({
   format: "STRUCT",
-  attributes: { my_trace_id: request.id }
+  attributes: { my_trace_id: request.id },
 });
 logger.error("Processing Failed", new Error("Unreachable"));
 // {

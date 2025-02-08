@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/elasticsearch-client",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "Dead simple client for AWS managed Elasticsearch.",
   "keywords": [
     "aws",
@@ -8,10 +8,12 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link && cp dist/elasticsearch-client.d.ts ../docs/types/",
-    "test": "jest --no-cache --verbose",
-    "test:watch": "jest --watch",
-    "clean:publish": "rm -r dist; npm run build && npm publish --access public"
+    "analyze": "npm run build && npm run lint && npm test",
+    "clean": "rm -rf coverage dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint lib",
+    "test": "LOG_LEVEL=WARN jest"
   },
   "repository": {
     "type": "git",
@@ -26,20 +28,16 @@
   "devDependencies": {
     "@sailplane/aws-https": "file:../aws-https",
     "@sailplane/logger": "file:../logger",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^18.19.17",
-    "aws4": "^1.12.0",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.2",
-    "ts-node": "^10.9.2",
-    "typescript": "4.9.x"
+    "aws4": "^1.13.2"
   },
   "peerDependencies": {
-    "@sailplane/aws-https": ">=3.0.0",
-    "@sailplane/logger": ">=5.0.0"
+    "@sailplane/aws-https": ">=4.0.0",
+    "@sailplane/logger": ">=6.0.0"
   },
-  "main": "dist/elasticsearch-client.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist/elasticsearch-client.d.ts"
+    "dist"
   ]
 }

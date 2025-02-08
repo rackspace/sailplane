@@ -1,6 +1,6 @@
 {
   "name": "@sailplane/aws-https",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "description": "HTTPS client with AWS Signature v4",
   "keywords": [
     "aws",
@@ -10,10 +10,12 @@
     "typescript"
   ],
   "scripts": {
-    "build": "tsc && npm link && cp dist/aws-https.d.ts ../docs/types/",
-    "test": "LOG_LEVEL=NONE jest --runInBand --no-cache --verbose",
-    "test:watch": "jest --watch --runInBand",
-    "clean:publish": "rm -r dist; npm run build && npm publish --access public"
+    "analyze": "npm run build && npm run lint && npm test",
+    "clean": "rm -rf coverage dist",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint lib",
+    "test": "LOG_LEVEL=NONE jest --runInBand --no-cache --verbose"
   },
   "repository": {
     "type": "git",
@@ -28,24 +30,21 @@
   "devDependencies": {
     "@sailplane/logger": "file:../logger",
     "@types/aws4": "^1.11.6",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^18.19.17",
-    "aws-sdk": "^2.1562.0",
-    "jest": "^29.7.0",
-    "nock": "^13.5.3",
-    "ts-jest": "^29.1.2",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "typescript": "4.9.x"
+    "aws-sdk": "^2.1692.0",
+    "nock": "^14.0.0"
   },
   "peerDependencies": {
-    "@sailplane/logger": ">=5.0.0"
+    "@sailplane/logger": ">=6.0.0",
+    "aws4": "^1.13.2",
+    "aws-sdk": "^2.1692.0"
   },
   "dependencies": {
-    "aws4": "^1.12.0"
+    "aws4": "^1.13.2"
   },
-  "main": "dist/aws-https.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "files": [
-    "dist/aws-https.d.ts"
+    "dist"
   ]
 }

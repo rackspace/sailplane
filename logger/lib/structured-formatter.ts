@@ -13,31 +13,31 @@ import { getContext } from "./context";
  * @return array to pass to a console function
  */
 export const structuredFormatter: FormatterFn = (
-    loggerConfig: LoggerConfig,
-    globalConfig: LoggerConfig,
-    level: LogLevel,
-    message: string,
-    params: any[]
+  loggerConfig: LoggerConfig,
+  globalConfig: LoggerConfig,
+  level: LogLevel,
+  message: string,
+  params: any[],
 ): any[] => {
-    const item = {
-        ...getContext(),
-        ...globalConfig.attributes,
-        ...(globalConfig.attributesCallback?.()),
-        ...loggerConfig.attributes,
-        ...(loggerConfig.attributesCallback?.()),
-        level: LogLevel[level],
-        module: loggerConfig.module,
-        timestamp: new Date().toISOString(),
-        message,
-    };
+  const item = {
+    ...getContext(),
+    ...globalConfig.attributes,
+    ...globalConfig.attributesCallback?.(),
+    ...loggerConfig.attributes,
+    ...loggerConfig.attributesCallback?.(),
+    level: LogLevel[level],
+    module: loggerConfig.module,
+    timestamp: new Date().toISOString(),
+    message,
+  };
 
-    if (params.length) {
-        if (params.length === 1 && typeof params[0] === 'object') {
-            item.value = params[0];
-        } else {
-            item.params = params;
-        }
+  if (params.length) {
+    if (params.length === 1 && typeof params[0] === "object") {
+      item.value = params[0];
+    } else {
+      item.params = params;
     }
+  }
 
-    return [jsonStringify(item)];
+  return [jsonStringify(item)];
 };

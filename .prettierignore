@@ -1,0 +1,6 @@
+.DS_Store
+.serverless
+.vscode
+coverage
+dist
+node_modules

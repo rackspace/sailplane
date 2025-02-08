@@ -20,7 +20,7 @@ As of v3, Injector also supports a Typescript decorator for registering classes.
 ## Install
 
 ```shell
-npm install @sailplane/injector @sailplane/logger bottlejs@1.7
+npm install @sailplane/injector @sailplane/logger bottlejs@2
 ```
 
 ## Configuration
@@ -39,9 +39,9 @@ If you wish to use the Typescript decorator, these options must be enabled in `t
 If using [esbuild](https://esbuild.github.io), a plugin such as
 [esbuild-decorators](https://github.com/anatine/esbuildnx/tree/main/packages/esbuild-decorators) is necessary.
 
-## Typescript Declarations
+## API Documentation
 
-[injector.d.ts](types/injector.d.ts)
+[API Documentation on jsDocs.io](https://www.jsdocs.io/package/@sailplane/injector)
 
 ## Usage with Examples
 
@@ -53,10 +53,9 @@ to `Injector.get(className)`, the singleton instance will be created and returne
 Example without decorator:
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
-export class MyService {
-}
+export class MyService {}
 Injector.register(MyService);
 
 // Elsewhere...
@@ -66,11 +65,10 @@ const myService = Injector.get(MyService)!;
 Example with decorator:
 
 ```ts
-import {Injector, Injectable} from "@sailplane/injector";
+import { Injector, Injectable } from "@sailplane/injector";
 
 @Injectable()
-export class MyService {
-}
+export class MyService {}
 
 // Elsewhere...
 const myService = Injector.get(MyService)!;
@@ -87,36 +85,36 @@ singleton instance will be created and returned.
 Example without decorator:
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
-export class MyHelper {
-}
+export class MyHelper {}
 Injector.register(MyHelper);
-Injector.registerConstant('stage', 'dev');
+Injector.registerConstant("stage", "dev");
 
 export class MyService {
-    constructor(private readonly helper: MyHelper,
-                private readonly stage: string) {
-    }
+  constructor(
+    private readonly helper: MyHelper,
+    private readonly stage: string,
+  ) {}
 }
-Injector.register(MyService, [MyHelper, 'stage']);
+Injector.register(MyService, [MyHelper, "stage"]);
 ```
 
 Example with decorator:
 
 ```ts
-import {Injector, Injectable} from "@sailplane/injector";
+import { Injector, Injectable } from "@sailplane/injector";
 
 @Injectable()
-export class MyHelper {
-}
-Injector.registerConstant('stage', 'dev');
+export class MyHelper {}
+Injector.registerConstant("stage", "dev");
 
-@Injectable({ dependencies: [MyHelper, 'stage'] })
+@Injectable({ dependencies: [MyHelper, "stage"] })
 export class MyService {
-    constructor(private readonly helper: MyHelper,
-                private readonly stage: string) {
-    }
+  constructor(
+    private readonly helper: MyHelper,
+    private readonly stage: string,
+  ) {}
 }
 ```
 
@@ -135,18 +133,18 @@ keep the two lists synchronized.
 Example:
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
-export class MyHelper {
-}
+export class MyHelper {}
 Injector.register(MyHelper);
-Injector.registerConstant('stage', 'dev');
+Injector.registerConstant("stage", "dev");
 
 export class MyService {
-    static readonly $inject = [MyHelper, 'stage'];
-    constructor(private readonly helper: MyHelper,
-                private readonly stage: string) {
-    }
+  static readonly $inject = [MyHelper, "stage"];
+  constructor(
+    private readonly helper: MyHelper,
+    private readonly stage: string,
+  ) {}
 }
 Injector.register(MyService);
 ```
@@ -164,35 +162,34 @@ own factory function for instantiating the singleton instance.
 Example without decorator:
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
-export class MyHelper {
-}
+export class MyHelper {}
 Injector.register(MyHelper);
 
 export class MyService {
-    constructor(private readonly helper: MyHelper,
-                private readonly stage: string) {
-    }
+  constructor(
+    private readonly helper: MyHelper,
+    private readonly stage: string,
+  ) {}
 }
-Injector.register(MyService,
-                  () => new MyService(Injector.get(MyHelper)!, process.env.STAGE!));
+Injector.register(MyService, () => new MyService(Injector.get(MyHelper)!, process.env.STAGE!));
 ```
 
 Example with decorator:
 
 ```ts
-import {Injector, Injectable} from "@sailplane/injector";
+import { Injector, Injectable } from "@sailplane/injector";
 
 @Injectable()
-export class MyHelper {
-}
+export class MyHelper {}
 
-@Injectable({factory: () => new MyService(Injector.get(MyHelper)!, process.env.STAGE!)})
+@Injectable({ factory: () => new MyService(Injector.get(MyHelper)!, process.env.STAGE!) })
 export class MyService {
-    constructor(private readonly helper: MyHelper,
-                private readonly stage: string) {
-    }
+  constructor(
+    private readonly helper: MyHelper,
+    private readonly stage: string,
+  ) {}
 }
 ```
 
@@ -206,15 +203,15 @@ Here's the business logic code:
 
 ```ts
 abstract class SpecialDataRepository {
-abstract get(id: string): Promise<SpecialData>;
+  abstract get(id: string): Promise<SpecialData>;
 }
 
 class SpecialBizLogicService {
-constructor(dataRepo: SpecialDataRepository) {}
-public async calculate(id: string) {
-  const data = await this.dataRepo.get(id);
-  // do stuff
-}
+  constructor(dataRepo: SpecialDataRepository) {}
+  public async calculate(id: string) {
+    const data = await this.dataRepo.get(id);
+    // do stuff
+  }
 }
 Injector.register(SpecialBizLogicService); // Could use @Injectable() instead
 ```
@@ -225,7 +222,7 @@ to register the implementing repository, which could be done conditionally:
 Example without decorator:
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
 export class LocalDataRepository extends SpecialDataRepository {
   async get(id: string): Promise<SpecialData> {
@@ -240,18 +237,17 @@ export class RemoteDataRepository extends SpecialDataRepository {
 }
 
 const isLocal = !!process.env.SHELL;
-Injector.register(
-  MyService,
-  () => isLocal ? new LocalDataRepository() : new RemoteDataRepository()
+Injector.register(MyService, () =>
+  isLocal ? new LocalDataRepository() : new RemoteDataRepository(),
 );
 ```
 
 Example with decorator (can't be conditional):
 
 ```ts
-import {Injector, Injectable} from "@sailplane/injector";
+import { Injector, Injectable } from "@sailplane/injector";
 
-@Injectable({as: SpecialDataRepository})
+@Injectable({ as: SpecialDataRepository })
 export class RemoteDataRepository extends SpecialDataRepository {
   async get(id: string): Promise<SpecialData> {
     // implementation ....
@@ -273,55 +269,53 @@ own factory function for returning the singleton instance.
 Example: Inject a configuration
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
-Injector.registerFactory('config', () => {
-    // Note that this returns a Promise
-    return Injector.get(StateStorage)!.get('MyService', 'config');
+Injector.registerFactory("config", () => {
+  // Note that this returns a Promise
+  return Injector.get(StateStorage)!.get("MyService", "config");
 });
 
 // Elsewhere...
-const config = await Injector.getByName('config');
+const config = await Injector.getByName("config");
 ```
 
 Example: Inject an interface implementation, conditionally and no decorator
 
 ```ts
-import {Injector} from "@sailplane/injector";
+import { Injector } from "@sailplane/injector";
 
 export interface FoobarService {
-    doSomething(): void;
+  doSomething(): void;
 }
 
 export class FoobarServiceImpl implements FoobarService {
-    constructor(private readonly stateStorage: StateStorage) {}
+  constructor(private readonly stateStorage: StateStorage) {}
 
-    doSomething(): void {
-        this.stateStorage.set('foobar', 'did-it', 'true');
-    }
+  doSomething(): void {
+    this.stateStorage.set("foobar", "did-it", "true");
+  }
 }
 
 export class FoobarServiceDemo implements FoobarService {
-    doSomething(): void {
-        console.log("Nothing really");
-    }
+  doSomething(): void {
+    console.log("Nothing really");
+  }
 }
 
-Injector.registerFactory('FoobarService', () => {
-    if (process.env.DEMO! === 'true') {
-        return new FoobarServiceDemo();
-    }
-    else {
-        return new FoobarServiceImpl(Injector.get(StateStorage)!);
-    }
+Injector.registerFactory("FoobarService", () => {
+  if (process.env.DEMO! === "true") {
+    return new FoobarServiceDemo();
+  } else {
+    return new FoobarServiceImpl(Injector.get(StateStorage)!);
+  }
 });
 
 // Elsewhere...
 
 export class MyService {
-    static readonly $inject = ['FoobarService']; // Note: This is a string!
-    constructor(private readonly foobarSvc: FoobarService) {
-    }
+  static readonly $inject = ["FoobarService"]; // Note: This is a string!
+  constructor(private readonly foobarSvc: FoobarService) {}
 }
 Injector.register(MyService);
 ```
@@ -329,27 +323,26 @@ Injector.register(MyService);
 Example: Inject an interface implementation with the decorator
 
 ```ts
-import {Injector, Injectable} from "@sailplane/injector";
+import { Injector, Injectable } from "@sailplane/injector";
 
 export interface FoobarService {
-    doSomething(): void;
+  doSomething(): void;
 }
 
 @Injectable({ as: "FoobarService" })
 export class FoobarServiceImpl implements FoobarService {
-    constructor(private readonly stateStorage: StateStorage) {}
+  constructor(private readonly stateStorage: StateStorage) {}
 
-    doSomething(): void {
-        // code
-    }
+  doSomething(): void {
+    // code
+  }
 }
 
 // Elsewhere...
 
-@Injectable({dependencies: ['FoobarService']}) // Note: This is a string!
+@Injectable({ dependencies: ["FoobarService"] }) // Note: This is a string!
 export class MyService {
-    constructor(private readonly foobarSvc: FoobarService) {
-    }
+  constructor(private readonly foobarSvc: FoobarService) {}
 }
 Injector.register(MyService);
 ```
@@ -363,18 +356,17 @@ lazy-created.
 Example:
 
 ```ts
-import {Injector} from "@sailplane/injector";
-import {environment} from "environment";
+import { Injector } from "@sailplane/injector";
+import { environment } from "environment";
 
-Injector.registerConstant('environment-config', environment);
-Injector.registerConstant('promisedData', asyncFunction());
+Injector.registerConstant("environment-config", environment);
+Injector.registerConstant("promisedData", asyncFunction());
 
 // Later...
 
-const myEnv = Injector.getByName('environment-config');
-const myData = await Injector.getByName('promisedData');
+const myEnv = Injector.getByName("environment-config");
+const myData = await Injector.getByName("promisedData");
 ```
-
 
 ## More Examples
 
