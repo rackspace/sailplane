@@ -39,14 +39,38 @@ function toNamedDependencies(list: DependencyList): string[] {
  * The raw bottle is also available.
  */
 export class Injector {
-  public static readonly bottle = Bottle.pop("global");
+  static readonly defaultDomain = "global";
+  static #bottle = Bottle.pop(Injector.defaultDomain);
+  /** Access the underlying BottleJS instance */
+  static get bottle() {
+    return Injector.#bottle;
+  }
 
   /* istanbul ignore next */
   /**
-   * This may be called at beginning of process.
+   * Do not use.
    * @deprecated
    */
   static initialize() {}
+
+  /**
+   * Switch the Injector to a different domain.
+   * Injector domains are entirely independent instances from each other.
+   *
+   * This is particularly useful to isolate production from mock dependencies for unit tests;
+   * initialize your test by switching to a "test" domain and registering mock classes
+   * to isolate the unit under test.
+   *
+   * @param domainName name of domain to switch to;
+   *                   use `Injector.defaultDomain` to return to the default.
+   * @param reset when true, the domain will be reset (cleared, emptied).
+   */
+  static switchDomain(domainName: string, reset = false): void {
+    if (reset) {
+      Bottle.clear(domainName);
+    }
+    Injector.#bottle = Bottle.pop(domainName);
+  }
 
   /**
    * Register a class.
@@ -82,22 +106,22 @@ export class Injector {
   ): void {
     if (!clazz || !asName) {
       throw new TypeError("Class to register is undefined: " + clazz.toString() + " " + asName);
-    } else if (Injector.bottle.container[asName] == undefined) {
+    } else if (Injector.#bottle.container[asName] == undefined) {
       if (!factoryOrDependencies) {
         const dependencies = toNamedDependencies(clazz.$inject as DependencyList);
         logger.debug(
           `Registering class ${clazz.name} with dependencies: ` + dependencies.toString(),
         );
-        Injector.bottle.service(asName, clazz, ...dependencies);
+        Injector.#bottle.service(asName, clazz, ...dependencies);
       } else if (Array.isArray(factoryOrDependencies)) {
         const dependencies = toNamedDependencies(factoryOrDependencies);
         logger.debug(
           `Registering class ${clazz.name} with dependencies: ` + dependencies.toString(),
         );
-        Injector.bottle.service(asName, clazz, ...dependencies);
+        Injector.#bottle.service(asName, clazz, ...dependencies);
       } else if (typeof factoryOrDependencies === "function") {
         logger.debug(`Registering class ${clazz.name} with factory`);
-        Injector.bottle.factory(asName, factoryOrDependencies);
+        Injector.#bottle.factory(asName, factoryOrDependencies);
       } else {
         throw new TypeError(
           `Unknown type of factoryOrDependencies when registering ${clazz.name} with Injector`,
@@ -122,9 +146,9 @@ export class Injector {
   static registerFactory<T>(name: string, factory: () => T): void {
     if (!name) {
       throw new TypeError("Name to register is blank");
-    } else if (Injector.bottle.container[name] == undefined) {
+    } else if (Injector.#bottle.container[name] == undefined) {
       logger.debug(`Registering ${name} with factory`);
-      Injector.bottle.factory(name, factory);
+      Injector.#bottle.factory(name, factory);
     } else {
       logger.warn(`Already registered factory ${name}`);
     }
@@ -141,8 +165,8 @@ export class Injector {
   static registerConstant<T>(name: string, value: T): void {
     if (!name) {
       throw new TypeError("Constant name to register is blank");
-    } else if (Injector.bottle.container[name] == undefined) {
-      Injector.bottle.constant(name, value);
+    } else if (Injector.#bottle.container[name] == undefined) {
+      Injector.#bottle.constant(name, value);
     } else {
       logger.warn(`Already registered constant "${name}"`);
     }
@@ -156,7 +180,7 @@ export class Injector {
    * @return the singleton instance of the requested class, undefined if not registered.
    */
   static get<T>(clazz: GettableClass<T>): T | undefined {
-    return Injector.bottle.container[clazz.name] as T;
+    return Injector.#bottle.container[clazz.name] as T;
   }
 
   /**
@@ -169,7 +193,7 @@ export class Injector {
    *         undefined if not registered.
    */
   static getByName<T>(name: string): T | undefined {
-    return Injector.bottle.container[name] as T;
+    return Injector.#bottle.container[name] as T;
   }
 
   /**
@@ -182,7 +206,7 @@ export class Injector {
     clazzOrName: InjectableClass<unknown> | GettableClass<unknown> | string,
   ): boolean {
     const name = typeof clazzOrName === "string" ? clazzOrName : clazzOrName.name;
-    return name in Injector.bottle.container;
+    return name in Injector.#bottle.container;
   }
 }
 
