@@ -4,14 +4,14 @@ Light-weight and type-safe Dependency Injection.
 
 ## Overview
 
-Simple, light-weight, lazy-instantiating, and type-safe dependency injection in Typescript!
+Simple, light-weight, lazy-instantiating, and type-safe dependency injection in TypeScript!
 Perfect for use in Lambdas and unit test friendly.
 
 It is built on top of [BottleJS](https://www.npmjs.com/package/bottlejs), with a simple type-safe
-wrapper. The original `bottle` is available for more advanced use, though. Even if you are not using Typescript,
+wrapper. The original `bottle` is available for more advanced use, though. Even if you are not using TypeScript,
 you may still prefer this simplified interface over using BottleJS directly.
 
-As of v3, Injector also supports a Typescript decorator for registering classes.
+As of v3, Injector also supports a TypeScript decorator for registering classes.
 
 `Injector` depends on one other utility to work:
 
@@ -25,7 +25,7 @@ npm install @sailplane/injector @sailplane/logger bottlejs@2
 
 ## Configuration
 
-If you wish to use the Typescript decorator, these options must be enabled in `tsconfig.json`:
+If you wish to use the TypeScript decorator, these options must be enabled in `tsconfig.json`:
 
 ```json
 {
@@ -126,7 +126,7 @@ in the same order. Then use `Injector.register(className)` to register a class.
 Upon the first call to `Injector.get(className)`, the
 singleton instance will be created with the specified dependencies.
 
-This functions just like the previous use, but allows you to specify the dependencies
+This functions just like the previous use but allows you to specify the dependencies
 right next to the constructor instead of after the class definition; thus making it easier to
 keep the two lists synchronized.
 
@@ -260,8 +260,8 @@ export class RemoteDataRepository extends SpecialDataRepository {
 If you need to inject something other than a class, you can register a factory to create
 anything and give it a name. This is useful if you have multiple implementations
 of an `interface`, and one to register one of them by the interface name at runtime. Since
-interfaces don't exist at runtime (they don't exist in Javascript), you must define the name
-yourself. (See previous example using an abstract base class for a more type-safe approach.)
+interfaces don't exist at runtime (they don't exist in JavaScript), you must define the name
+yourself. (See the previous example using an abstract base class for a more type-safe approach.)
 
 Use `Injector.registerFactory<T>(name: string, factory: ()=>T)` to register any object with your
 own factory function for returning the singleton instance.
@@ -344,7 +344,6 @@ export class FoobarServiceImpl implements FoobarService {
 export class MyService {
   constructor(private readonly foobarSvc: FoobarService) {}
 }
-Injector.register(MyService);
 ```
 
 ### Register a constant value and fetch it by name
@@ -368,6 +367,84 @@ const myEnv = Injector.getByName("environment-config");
 const myData = await Injector.getByName("promisedData");
 ```
 
+### Isolate class dependency injection for Unit test
+
+Dependency that we need to mock out: `foo.repository.ts`:
+
+```ts
+import { Injector, Injectable } from "@sailplane/injector";
+
+@Injectable()
+export class FooRepository {
+  get(id: string): Promise<Foo> {
+    // implementation ....
+  }
+}
+```
+
+Service to unit test: `foo.service.ts`:
+
+```ts
+import { Injector, Injectable } from "@sailplane/injector";
+import { FoobarRepository } from "./foo.repository.js";
+
+@Injectable()
+export class FooService {
+  constructor(private readonly fooRepo: FooRepository) {}
+
+  async getValue(id: string): Promise<string> {
+    const foo = await this.fooRepo.get(id);
+    return foo.value;
+  }
+}
+```
+
+The `import` of `FooRepository` will register it with `Injector`, but we'll just ignore that in our unit test:
+
+```ts
+import { FooService } from "./foo.service.js";
+
+describe("FooService", () => {
+  it("will return the value of a Foo", async () => {
+    const mockRepo = { get: (id: string) => Promise.resolve("tada") };
+    const uut = new FooService(mockRepo);
+    expect(uut.getValue("test")).toEqual("tada");
+  });
+})
+```
+
+### Isolate dependency get for Unit test
+
+Sometimes top-level code will need to call `Injector.get(name)` directly. To mock this out for a unit test,
+we can switch injector domains. This is necessary when simply importing a dependency injects the real
+dependency, because we cannot simply register a replacement.
+
+Continuing with `FooService` from the previous example, here's `foo.handler.ts`:
+
+```ts
+import { FooService } from "./foo.service.js";
+
+export const handler = (request) => {
+  const fooService = Injector.get(FooService)!;
+  return fooService.getValue(request.parameter.id);
+}
+```
+
+To test this, we use `Injector.switchDomain(name)`:
+
+```ts
+import { Injector } from "@sailplane/injector";
+import { handler } from "./foo.handler.js";
+
+// Switch to test domain and register mock
+Injector.switchDomain("test");
+Injector.registerConstant("FooService", { getValue: (id) => id + " value" });
+
+it("Foo handler returns requested value", async () => {
+  expect(handler({parameter: { id: "hello" }})).toEqual("hello value");
+});
+```
+
 ## More Examples
 
 See [examples](examples.md) for another example.
@@ -377,7 +454,7 @@ See [examples](examples.md) for another example.
 Dependencies are not evaluated until the class is instantiated, thus the order of registration does not matter.
 
 Cyclic constructor dependencies will fail. This probably indicates a design problem, but you can break the cycle by
-calling `Injector.get(className)` when needed (outside of the constructor), instead of injecting into the constructor.
+calling `Injector.get(className)` when needed (outside the constructor), instead of injecting into the constructor.
 
 This is a perfectly valid way of using Injector (on demand rather than upon construction). It does require
 that unit test mocks be registered with the Injector rather than passed into the constructor.

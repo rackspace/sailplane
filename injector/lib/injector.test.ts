@@ -17,6 +17,40 @@ function expectThrow(fn: () => any): unknown {
 }
 
 describe("Injector", () => {
+  test("switchDomain()", () => {
+    // Using default domain
+    expect(Injector.isRegistered("Unswitched")).toBeFalsy();
+    Injector.registerConstant("Unswitched", "default");
+    expect(Injector.isRegistered("Unswitched")).toBeTruthy();
+    expect(Injector.isRegistered("IsSecond")).toBeFalsy();
+
+    // Switch to second domain
+    Injector.switchDomain("second");
+    expect(Injector.isRegistered("Unswitched")).toBeFalsy();
+    expect(Injector.isRegistered("IsSecond")).toBeFalsy();
+    Injector.registerConstant("IsSecond", "Hello");
+    expect(Injector.isRegistered("Unswitched")).toBeFalsy();
+    expect(Injector.isRegistered("IsSecond")).toBeTruthy();
+
+    // Switch back to default, registration is still there
+    Injector.switchDomain(Injector.defaultDomain);
+    expect(Injector.isRegistered("Unswitched")).toBeTruthy();
+    expect(Injector.isRegistered("IsSecond")).toBeFalsy();
+
+    // Switch back to second with reset
+    Injector.switchDomain("second", true);
+    expect(Injector.isRegistered("Unswitched")).toBeFalsy();
+    expect(Injector.isRegistered("IsSecond")).toBeFalsy();
+
+    // Reset to default to continue unit tests
+    Injector.switchDomain(Injector.defaultDomain);
+  });
+
+  test("access underlying bottle", () => {
+    expect(Injector.bottle.container).toBeTruthy();
+    expect(Injector.bottle.container["Unswitched"]).toEqual("default");
+  });
+
   describe("register() & get()", () => {
     test("register/get with no dependencies", () => {
       // GIVEN
