@@ -86,7 +86,7 @@ export interface LoggerConfig {
   format: LogFormat;
 
   /**
-   * Function use to format output. Set based on format property, but may
+   * Function used to format output. Set based on format property, but may
    * be programmatically set instead.
    */
   formatter: FormatterFn;
