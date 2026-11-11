@@ -29,7 +29,7 @@
     "Adam Fanello <adam.fanello@rackspace.com>"
   ],
   "devDependencies": {
-    "@aws-sdk/client-ssm": "^3.735.0",
+    "@aws-sdk/client-ssm": "^3.1166.0",
     "@sailplane/logger": "file:../logger"
   },
   "peerDependencies": {
